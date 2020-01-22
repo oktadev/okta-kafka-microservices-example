@@ -1,13 +1,14 @@
 # Microservices Architecture with JHipster and Kafka
 
-This repository contains a microservices architecture with Kafka support and includes docker-compose configuration for running the services locally. The tutorial for creating this example is available on the [Okta Developer Blog]().
+This repository contains a microservices architecture with Kafka support and includes docker-compose configuration for running the services locally. 
+
+Please read [Communicate Between Microservices with Apache Kafka](https://developer.okta.com/blog/2020/01/22/kafka-microservices) to see how this example was created.
 
 **Prerequisites:**
 - [Java 8](https://adoptopenjdk.net/)
 - [Docker](https://docs.docker.com/install)
 - [Docker Compose](https://docs.docker.com/compose/install)
 - [Node.js](https://nodejs.org/en/)
-
 
 ## Getting Started
 
@@ -74,7 +75,7 @@ Once everything is up, go to the gateway at `http://localhost:8080` and log in. 
 
 ## Help
 
-Please post any questions as comments on the [blog post](), or on the [Okta Developer Forums](https://devforum.okta.com/).
+Please post any questions as comments on the [blog post](https://developer.okta.com/blog/2020/01/22/kafka-microservices), or on the [Okta Developer Forums](https://devforum.okta.com/).
 
 ## License
 
