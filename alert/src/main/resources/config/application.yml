@@ -222,5 +222,6 @@ kafka:
 # ===================================================================
 
 # application:
+
 alert:
-  distribution-list: list@email.com
+  distribution-list: {distributionListAddress}

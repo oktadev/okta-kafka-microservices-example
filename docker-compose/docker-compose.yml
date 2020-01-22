@@ -17,7 +17,7 @@ services:
       - JHIPSTER_REGISTRY_PASSWORD=admin
       - SPRING_MAIL_USERNAME=${MAIL_USERNAME}
       - SPRING_MAIL_PASSWORD=${MAIL_PASSWORD}
-      - ALERT_DISTRIBUTION_LIST=${DISTRIBUTION_LIST}      
+      - ALERT_DISTRIBUTION_LIST=${DISTRIBUTION_LIST}
   alert-mysql:
     image: 'mysql:8.0.18'
     environment:
