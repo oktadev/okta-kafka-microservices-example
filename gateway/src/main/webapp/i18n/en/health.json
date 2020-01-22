@@ -13,7 +13,7 @@
     "indicator": {
       "discoveryComposite": "Discovery Composite",
       "refreshScope": "Microservice Refresh Scope",
-      "configServer": "Microservice Config Server",
+      "clientConfigServer": "Microservice Config Server",
       "hystrix": "Hystrix",
       "diskSpace": "Disk space",
       "mail": "Email",

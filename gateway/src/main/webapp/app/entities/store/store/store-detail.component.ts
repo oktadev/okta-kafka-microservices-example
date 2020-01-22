@@ -8,17 +8,17 @@ import { IStore } from 'app/shared/model/store/store.model';
   templateUrl: './store-detail.component.html'
 })
 export class StoreDetailComponent implements OnInit {
-  store: IStore;
+  store: IStore | null = null;
 
   constructor(protected activatedRoute: ActivatedRoute) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.activatedRoute.data.subscribe(({ store }) => {
       this.store = store;
     });
   }
 
-  previousState() {
+  previousState(): void {
     window.history.back();
   }
 }

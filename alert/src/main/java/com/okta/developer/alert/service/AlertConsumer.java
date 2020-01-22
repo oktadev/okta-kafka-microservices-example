@@ -1,6 +1,10 @@
-package com.okta.developer.store.service;
+package com.okta.developer.alert.service;
 
-import com.okta.developer.store.config.KafkaProperties;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.okta.developer.alert.config.KafkaProperties;
+import com.okta.developer.alert.domain.StoreAlert;
+import com.okta.developer.alert.repository.StoreAlertRepository;
+import com.okta.developer.alert.service.dto.StoreAlertDTO;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -9,14 +13,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Collections;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
-public class StoreKafkaConsumer {
+public class AlertConsumer {
 
-    private final Logger log = LoggerFactory.getLogger(StoreKafkaConsumer.class);
+    private final Logger log = LoggerFactory.getLogger(AlertConsumer.class);
 
     private final AtomicBoolean closed = new AtomicBoolean(false);
 
@@ -26,23 +35,44 @@ public class StoreKafkaConsumer {
 
     private KafkaConsumer<String, String> kafkaConsumer;
 
-    public StoreKafkaConsumer(KafkaProperties kafkaProperties) {
+    private StoreAlertRepository storeAlertRepository;
+
+    private EmailService emailService;
+
+    private ExecutorService executorService = Executors.newCachedThreadPool();
+
+    public AlertConsumer(KafkaProperties kafkaProperties, StoreAlertRepository storeAlertRepository, EmailService emailService) {
         this.kafkaProperties = kafkaProperties;
+        this.storeAlertRepository = storeAlertRepository;
+        this.emailService = emailService;
     }
 
+    @PostConstruct
     public void start() {
+
         log.info("Kafka consumer starting...");
         this.kafkaConsumer = new KafkaConsumer<>(kafkaProperties.getConsumerProps());
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
+        kafkaConsumer.subscribe(Collections.singletonList(TOPIC));
+        log.info("Kafka consumer started");
 
-        Thread consumerThread = new Thread(() -> {
+        executorService.execute(() -> {
             try {
-                kafkaConsumer.subscribe(Collections.singletonList(TOPIC));
-                log.info("Kafka consumer started");
                 while (!closed.get()) {
                     ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofSeconds(3));
                     for (ConsumerRecord<String, String> record : records) {
                         log.info("Consumed message in {} : {}", TOPIC, record.value());
+
+                        ObjectMapper objectMapper = new ObjectMapper();
+                        StoreAlertDTO storeAlertDTO = objectMapper.readValue(record.value(), StoreAlertDTO.class);
+                        StoreAlert storeAlert = new StoreAlert();
+                        storeAlert.setStoreName(storeAlertDTO.getStoreName());
+                        storeAlert.setStoreStatus(storeAlertDTO.getStoreStatus());
+                        storeAlert.setTimestamp(Instant.now());
+                        storeAlertRepository.save(storeAlert);
+
+                        emailService.sendSimpleMessage(storeAlertDTO);
+
                     }
                 }
                 kafkaConsumer.commitSync();
@@ -52,10 +82,11 @@ public class StoreKafkaConsumer {
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             } finally {
+                log.info("Kafka consumer close");
                 kafkaConsumer.close();
             }
         });
-        consumerThread.start();
+
     }
 
     public KafkaConsumer<String, String> getKafkaConsumer() {

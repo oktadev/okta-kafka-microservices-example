@@ -13,35 +13,38 @@ import { StoreDeleteDialogComponent } from './store-delete-dialog.component';
   templateUrl: './store.component.html'
 })
 export class StoreComponent implements OnInit, OnDestroy {
-  stores: IStore[];
-  eventSubscriber: Subscription;
+  stores?: IStore[];
+  eventSubscriber?: Subscription;
 
   constructor(protected storeService: StoreService, protected eventManager: JhiEventManager, protected modalService: NgbModal) {}
 
-  loadAll() {
+  loadAll(): void {
     this.storeService.query().subscribe((res: HttpResponse<IStore[]>) => {
-      this.stores = res.body;
+      this.stores = res.body ? res.body : [];
     });
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.loadAll();
     this.registerChangeInStores();
   }
 
-  ngOnDestroy() {
-    this.eventManager.destroy(this.eventSubscriber);
+  ngOnDestroy(): void {
+    if (this.eventSubscriber) {
+      this.eventManager.destroy(this.eventSubscriber);
+    }
   }
 
-  trackId(index: number, item: IStore) {
-    return item.id;
+  trackId(index: number, item: IStore): number {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    return item.id!;
   }
 
-  registerChangeInStores() {
+  registerChangeInStores(): void {
     this.eventSubscriber = this.eventManager.subscribe('storeListModification', () => this.loadAll());
   }
 
-  delete(store: IStore) {
+  delete(store: IStore): void {
     const modalRef = this.modalService.open(StoreDeleteDialogComponent, { size: 'lg', backdrop: 'static' });
     modalRef.componentInstance.store = store;
   }

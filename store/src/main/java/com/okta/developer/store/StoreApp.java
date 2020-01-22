@@ -1,11 +1,8 @@
 package com.okta.developer.store;
 
 import com.okta.developer.store.config.ApplicationProperties;
-import com.okta.developer.store.config.DefaultProfileUtil;
 
-import com.okta.developer.store.service.StoreKafkaConsumer;
-import com.okta.developer.store.service.StoreKafkaProducer;
-import org.springframework.context.ConfigurableApplicationContext;
+import io.github.jhipster.config.DefaultProfileUtil;
 import io.github.jhipster.config.JHipsterConstants;
 
 import org.apache.commons.lang3.StringUtils;
@@ -64,10 +61,7 @@ public class StoreApp implements InitializingBean {
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(StoreApp.class);
         DefaultProfileUtil.addDefaultProfile(app);
-        ConfigurableApplicationContext applicationContext = app.run(args);
-        applicationContext.getBean(StoreKafkaProducer.class).init();
-        applicationContext.getBean(StoreKafkaConsumer.class).start();
-        Environment env = applicationContext.getEnvironment();
+        Environment env = app.run(args).getEnvironment();
         logApplicationStartup(env);
     }
 

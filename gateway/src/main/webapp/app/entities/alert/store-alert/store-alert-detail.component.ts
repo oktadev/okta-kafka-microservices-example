@@ -8,17 +8,17 @@ import { IStoreAlert } from 'app/shared/model/alert/store-alert.model';
   templateUrl: './store-alert-detail.component.html'
 })
 export class StoreAlertDetailComponent implements OnInit {
-  storeAlert: IStoreAlert;
+  storeAlert: IStoreAlert | null = null;
 
   constructor(protected activatedRoute: ActivatedRoute) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.activatedRoute.data.subscribe(({ storeAlert }) => {
       this.storeAlert = storeAlert;
     });
   }
 
-  previousState() {
+  previousState(): void {
     window.history.back();
   }
 }

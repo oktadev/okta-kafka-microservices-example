@@ -5,19 +5,19 @@ export class StoreComponentsPage {
   deleteButtons = element.all(by.css('jhi-store div table .btn-danger'));
   title = element.all(by.css('jhi-store div h2#page-heading span')).first();
 
-  async clickOnCreateButton() {
+  async clickOnCreateButton(): Promise<void> {
     await this.createButton.click();
   }
 
-  async clickOnLastDeleteButton() {
+  async clickOnLastDeleteButton(): Promise<void> {
     await this.deleteButtons.last().click();
   }
 
-  async countDeleteButtons() {
+  async countDeleteButtons(): Promise<number> {
     return this.deleteButtons.count();
   }
 
-  async getTitle() {
+  async getTitle(): Promise<string> {
     return this.title.getAttribute('jhiTranslate');
   }
 }
@@ -32,62 +32,62 @@ export class StoreUpdatePage {
   createTimestampInput = element(by.id('field_createTimestamp'));
   updateTimestampInput = element(by.id('field_updateTimestamp'));
 
-  async getPageTitle() {
+  async getPageTitle(): Promise<string> {
     return this.pageTitle.getAttribute('jhiTranslate');
   }
 
-  async setNameInput(name) {
+  async setNameInput(name: string): Promise<void> {
     await this.nameInput.sendKeys(name);
   }
 
-  async getNameInput() {
+  async getNameInput(): Promise<string> {
     return await this.nameInput.getAttribute('value');
   }
 
-  async setAddressInput(address) {
+  async setAddressInput(address: string): Promise<void> {
     await this.addressInput.sendKeys(address);
   }
 
-  async getAddressInput() {
+  async getAddressInput(): Promise<string> {
     return await this.addressInput.getAttribute('value');
   }
 
-  async setStatusSelect(status) {
+  async setStatusSelect(status: string): Promise<void> {
     await this.statusSelect.sendKeys(status);
   }
 
-  async getStatusSelect() {
+  async getStatusSelect(): Promise<string> {
     return await this.statusSelect.element(by.css('option:checked')).getText();
   }
 
-  async statusSelectLastOption() {
+  async statusSelectLastOption(): Promise<void> {
     await this.statusSelect
       .all(by.tagName('option'))
       .last()
       .click();
   }
 
-  async setCreateTimestampInput(createTimestamp) {
+  async setCreateTimestampInput(createTimestamp: string): Promise<void> {
     await this.createTimestampInput.sendKeys(createTimestamp);
   }
 
-  async getCreateTimestampInput() {
+  async getCreateTimestampInput(): Promise<string> {
     return await this.createTimestampInput.getAttribute('value');
   }
 
-  async setUpdateTimestampInput(updateTimestamp) {
+  async setUpdateTimestampInput(updateTimestamp: string): Promise<void> {
     await this.updateTimestampInput.sendKeys(updateTimestamp);
   }
 
-  async getUpdateTimestampInput() {
+  async getUpdateTimestampInput(): Promise<string> {
     return await this.updateTimestampInput.getAttribute('value');
   }
 
-  async save() {
+  async save(): Promise<void> {
     await this.saveButton.click();
   }
 
-  async cancel() {
+  async cancel(): Promise<void> {
     await this.cancelButton.click();
   }
 
@@ -100,11 +100,11 @@ export class StoreDeleteDialog {
   private dialogTitle = element(by.id('jhi-delete-store-heading'));
   private confirmButton = element(by.id('jhi-confirm-delete-store'));
 
-  async getDialogTitle() {
+  async getDialogTitle(): Promise<string> {
     return this.dialogTitle.getAttribute('jhiTranslate');
   }
 
-  async clickOnConfirmButton() {
+  async clickOnConfirmButton(): Promise<void> {
     await this.confirmButton.click();
   }
 }

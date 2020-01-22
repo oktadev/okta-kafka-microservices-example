@@ -4,7 +4,7 @@
             <h2 id="jhi-store-alert-heading" jhiTranslate="gatewayApp.alertStoreAlert.home.createOrEditLabel">Create or edit a Store Alert</h2>
             <div>
                 <jhi-alert-error></jhi-alert-error>
-                <div class="form-group" [hidden]="!editForm.get('id').value">
+                <div class="form-group" [hidden]="!editForm.get('id')!.value">
                     <label for="id" jhiTranslate="global.field.id">ID</label>
                     <input type="text" class="form-control" id="id" name="id" formControlName="id"
                         readonly />
@@ -13,9 +13,9 @@
                     <label class="form-control-label" jhiTranslate="gatewayApp.alertStoreAlert.storeName" for="field_storeName">Store Name</label>
                     <input type="text" class="form-control" name="storeName" id="field_storeName"
                            formControlName="storeName"/>
-                    <div *ngIf="editForm.get('storeName').invalid && (editForm.get('storeName').dirty || editForm.get('storeName').touched)">
+                    <div *ngIf="editForm.get('storeName')!.invalid && (editForm.get('storeName')!.dirty || editForm.get('storeName')!.touched)">
                         <small class="form-text text-danger"
-                               *ngIf="editForm.get('storeName').errors.required" jhiTranslate="entity.validation.required">
+                               *ngIf="editForm.get('storeName')?.errors?.required" jhiTranslate="entity.validation.required">
                         This field is required.
                         </small>
                     </div>
@@ -24,9 +24,9 @@
                     <label class="form-control-label" jhiTranslate="gatewayApp.alertStoreAlert.storeStatus" for="field_storeStatus">Store Status</label>
                     <input type="text" class="form-control" name="storeStatus" id="field_storeStatus"
                            formControlName="storeStatus"/>
-                    <div *ngIf="editForm.get('storeStatus').invalid && (editForm.get('storeStatus').dirty || editForm.get('storeStatus').touched)">
+                    <div *ngIf="editForm.get('storeStatus')!.invalid && (editForm.get('storeStatus')!.dirty || editForm.get('storeStatus')!.touched)">
                         <small class="form-text text-danger"
-                               *ngIf="editForm.get('storeStatus').errors.required" jhiTranslate="entity.validation.required">
+                               *ngIf="editForm.get('storeStatus')?.errors?.required" jhiTranslate="entity.validation.required">
                         This field is required.
                         </small>
                     </div>
@@ -36,13 +36,13 @@
                     <div class="d-flex">
                         <input id="field_timestamp" type="datetime-local" class="form-control" name="timestamp" formControlName="timestamp" placeholder="YYYY-MM-DD HH:mm"/>
                     </div>
-                    <div *ngIf="editForm.get('timestamp').invalid && (editForm.get('timestamp').dirty || editForm.get('timestamp').touched)">
+                    <div *ngIf="editForm.get('timestamp')!.invalid && (editForm.get('timestamp')!.dirty || editForm.get('timestamp')!.touched)">
                         <small class="form-text text-danger"
-                               *ngIf="editForm.get('timestamp').errors.required" jhiTranslate="entity.validation.required">
+                               *ngIf="editForm.get('timestamp')?.errors?.required" jhiTranslate="entity.validation.required">
                         This field is required.
                         </small>
                         <small class="form-text text-danger"
-                            [hidden]="!editForm.get('timestamp').errors?.ZonedDateTimelocal" jhiTranslate="entity.validation.ZonedDateTimelocal">
+                            [hidden]="!editForm.get('timestamp')?.errors?.ZonedDateTimelocal" jhiTranslate="entity.validation.ZonedDateTimelocal">
                             This field should be a date and time.
                         </small>
                     </div>

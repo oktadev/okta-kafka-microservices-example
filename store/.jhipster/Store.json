@@ -33,7 +33,7 @@
         }
     ],
     "relationships": [],
-    "changelogDate": "20191216195930",
+    "changelogDate": "20200110004040",
     "entityTableName": "store",
     "dto": "no",
     "pagination": "no",

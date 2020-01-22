@@ -1,11 +1,8 @@
 package com.okta.developer.alert;
 
 import com.okta.developer.alert.config.ApplicationProperties;
-import com.okta.developer.alert.config.DefaultProfileUtil;
 
-import com.okta.developer.alert.service.AlertKafkaConsumer;
-import com.okta.developer.alert.service.AlertKafkaProducer;
-import org.springframework.context.ConfigurableApplicationContext;
+import io.github.jhipster.config.DefaultProfileUtil;
 import io.github.jhipster.config.JHipsterConstants;
 
 import org.apache.commons.lang3.StringUtils;
@@ -65,10 +62,7 @@ public class AlertApp implements InitializingBean {
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(AlertApp.class);
         DefaultProfileUtil.addDefaultProfile(app);
-        ConfigurableApplicationContext applicationContext = app.run(args);
-        applicationContext.getBean(AlertKafkaProducer.class).init();
-        applicationContext.getBean(AlertKafkaConsumer.class).start();
-        Environment env = applicationContext.getEnvironment();
+        Environment env = app.run(args).getEnvironment();
         logApplicationStartup(env);
     }
 

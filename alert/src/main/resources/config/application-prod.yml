@@ -51,7 +51,7 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:mysql://localhost:3306/alert?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/alert?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC&createDatabaseIfNotExist=true
     username: root
     password:
     hikari:
@@ -88,8 +88,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: username
-    password: password
+    username: user@email.com
+    password: 123456
     protocol: smtp
     tls: true
     properties.mail.smtp:

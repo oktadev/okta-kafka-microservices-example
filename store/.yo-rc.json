@@ -6,10 +6,7 @@
     "enableSwaggerCodegen": false,
     "enableTranslation": true,
     "jhiPrefix": "jhi",
-    "languages": [
-      "en",
-      "fr"
-    ],
+    "languages": ["en", "fr"],
     "messageBroker": "kafka",
     "nativeLanguage": "en",
     "packageName": "com.okta.developer.store",
@@ -24,18 +21,17 @@
     "applicationType": "microservice",
     "authenticationType": "oauth2",
     "serverPort": "8082",
-    "jhipsterVersion": "6.5.1",
+    "jhipsterVersion": "6.6.0",
     "buildTool": "maven",
     "skipUserManagement": true,
     "clientPackageManager": "npm",
     "cacheProvider": "hazelcast",
     "embeddableLaunchScript": false,
+    "creationTimestamp": 1578616843780,
     "entitySuffix": "",
     "dtoSuffix": "DTO",
     "otherModules": [],
     "blueprints": []
   },
-  "entities": [
-    "Store"
-  ]
+  "entities": ["Store"]
 }

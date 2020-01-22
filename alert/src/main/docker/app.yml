@@ -8,19 +8,12 @@ services:
       - MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED=true
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://admin:$${jhipster.registry.password}@jhipster-registry:8761/eureka
       - SPRING_CLOUD_CONFIG_URI=http://admin:$${jhipster.registry.password}@jhipster-registry:8761/config
-      - SPRING_DATASOURCE_URL=jdbc:mysql://alert-mysql:3306/alert?useUnicode=true&characterEncoding=utf8&useSSL=false
+      - SPRING_DATASOURCE_URL=jdbc:mysql://alert-mysql:3306/alert?useUnicode=true&characterEncoding=utf8&useSSL=false&createDatabaseIfNotExist=true
       - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_ISSUER_URI=http://keycloak:9080/auth/realms/jhipster
       - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_ID=internal
       - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_SECRET=internal
       - JHIPSTER_SLEEP=30 # gives time for other services to boot before the application
-      - KAFKA_CONSUMER_KEY_DESERIALIZER=org.apache.kafka.common.serialization.StringDeserializer
-      - KAFKA_CONSUMER_VALUE_DESERIALIZER=org.apache.kafka.common.serialization.StringDeserializer
-      - KAFKA_CONSUMER_BOOTSTRAP_SERVERS=kafka:9092
-      - KAFKA_CONSUMER_GROUP_ID=alert
-      - KAFKA_CONSUMER_AUTO_OFFSET_RESET=earliest
-      - KAFKA_PRODUCER_BOOTSTRAP_SERVERS=kafka:9092
-      - KAFKA_PRODUCER_KEY_DESERIALIZER=org.apache.kafka.common.serialization.StringDeserializer
-      - KAFKA_PRODUCER_VALUE_DESERIALIZER=org.apache.kafka.common.serialization.StringDeserializer
+      - KAFKA_BOOTSTRAPSERVERS=kafka:9092
   alert-mysql:
     extends:
       file: mysql.yml

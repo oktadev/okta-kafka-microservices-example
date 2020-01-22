@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { JhiEventManager } from 'ng-jhipster';
 
@@ -10,7 +9,7 @@ import { StoreAlertService } from './store-alert.service';
   templateUrl: './store-alert-delete-dialog.component.html'
 })
 export class StoreAlertDeleteDialogComponent {
-  storeAlert: IStoreAlert;
+  storeAlert?: IStoreAlert;
 
   constructor(
     protected storeAlertService: StoreAlertService,
@@ -18,17 +17,14 @@ export class StoreAlertDeleteDialogComponent {
     protected eventManager: JhiEventManager
   ) {}
 
-  clear() {
-    this.activeModal.dismiss('cancel');
+  clear(): void {
+    this.activeModal.dismiss();
   }
 
-  confirmDelete(id: number) {
+  confirmDelete(id: number): void {
     this.storeAlertService.delete(id).subscribe(() => {
-      this.eventManager.broadcast({
-        name: 'storeAlertListModification',
-        content: 'Deleted an storeAlert'
-      });
-      this.activeModal.dismiss(true);
+      this.eventManager.broadcast('storeAlertListModification');
+      this.activeModal.close();
     });
   }
 }

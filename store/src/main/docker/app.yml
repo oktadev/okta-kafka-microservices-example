@@ -14,14 +14,7 @@ services:
       - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_ID=internal
       - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_SECRET=internal
       - JHIPSTER_SLEEP=30 # gives time for other services to boot before the application
-      - KAFKA_CONSUMER_KEY_DESERIALIZER=org.apache.kafka.common.serialization.StringDeserializer
-      - KAFKA_CONSUMER_VALUE_DESERIALIZER=org.apache.kafka.common.serialization.StringDeserializer
-      - KAFKA_CONSUMER_BOOTSTRAP_SERVERS=kafka:9092
-      - KAFKA_CONSUMER_GROUP_ID=store
-      - KAFKA_CONSUMER_AUTO_OFFSET_RESET=earliest
-      - KAFKA_PRODUCER_BOOTSTRAP_SERVERS=kafka:9092
-      - KAFKA_PRODUCER_KEY_DESERIALIZER=org.apache.kafka.common.serialization.StringDeserializer
-      - KAFKA_PRODUCER_VALUE_DESERIALIZER=org.apache.kafka.common.serialization.StringDeserializer
+      - KAFKA_BOOTSTRAPSERVERS=kafka:9092
   store-mongodb:
     extends:
       file: mongodb.yml

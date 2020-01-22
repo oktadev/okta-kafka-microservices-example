@@ -1,6 +1,7 @@
 package com.okta.developer.gateway;
 
-import com.okta.developer.gateway.config.DefaultProfileUtil;
+import io.github.jhipster.config.DefaultProfileUtil;
+
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 

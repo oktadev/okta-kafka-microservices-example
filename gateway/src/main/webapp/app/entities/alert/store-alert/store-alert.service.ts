@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import * as moment from 'moment';
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { DATE_FORMAT } from 'app/shared/constants/input.constants';
-import { map } from 'rxjs/operators';
-
 import { SERVER_API_URL } from 'app/app.constants';
 import { createRequestOption } from 'app/shared/util/request-util';
 import { IStoreAlert } from 'app/shared/model/alert/store-alert.model';
@@ -46,20 +46,20 @@ export class StoreAlertService {
       .pipe(map((res: EntityArrayResponseType) => this.convertDateArrayFromServer(res)));
   }
 
-  delete(id: number): Observable<HttpResponse<any>> {
-    return this.http.delete<any>(`${this.resourceUrl}/${id}`, { observe: 'response' });
+  delete(id: number): Observable<HttpResponse<{}>> {
+    return this.http.delete(`${this.resourceUrl}/${id}`, { observe: 'response' });
   }
 
   protected convertDateFromClient(storeAlert: IStoreAlert): IStoreAlert {
     const copy: IStoreAlert = Object.assign({}, storeAlert, {
-      timestamp: storeAlert.timestamp != null && storeAlert.timestamp.isValid() ? storeAlert.timestamp.toJSON() : null
+      timestamp: storeAlert.timestamp && storeAlert.timestamp.isValid() ? storeAlert.timestamp.toJSON() : undefined
     });
     return copy;
   }
 
   protected convertDateFromServer(res: EntityResponseType): EntityResponseType {
     if (res.body) {
-      res.body.timestamp = res.body.timestamp != null ? moment(res.body.timestamp) : null;
+      res.body.timestamp = res.body.timestamp ? moment(res.body.timestamp) : undefined;
     }
     return res;
   }
@@ -67,7 +67,7 @@ export class StoreAlertService {
   protected convertDateArrayFromServer(res: EntityArrayResponseType): EntityArrayResponseType {
     if (res.body) {
       res.body.forEach((storeAlert: IStoreAlert) => {
-        storeAlert.timestamp = storeAlert.timestamp != null ? moment(storeAlert.timestamp) : null;
+        storeAlert.timestamp = storeAlert.timestamp ? moment(storeAlert.timestamp) : undefined;
       });
     }
     return res;

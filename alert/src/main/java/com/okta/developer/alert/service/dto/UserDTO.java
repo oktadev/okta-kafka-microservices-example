@@ -5,9 +5,6 @@ import com.okta.developer.alert.config.Constants;
 import com.okta.developer.alert.domain.Authority;
 import com.okta.developer.alert.domain.User;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-
 import javax.validation.constraints.*;
 import java.time.Instant;
 import java.util.Set;

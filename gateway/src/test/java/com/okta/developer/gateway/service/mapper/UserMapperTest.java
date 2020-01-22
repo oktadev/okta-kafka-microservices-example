@@ -1,13 +1,9 @@
-package com.okta.developer.alert.service.mapper;
+package com.okta.developer.gateway.service.mapper;
 
-import com.okta.developer.alert.AlertApp;
-import com.okta.developer.alert.config.TestSecurityConfiguration;
-import com.okta.developer.alert.domain.User;
-import com.okta.developer.alert.service.dto.UserDTO;
+import com.okta.developer.gateway.domain.User;
+import com.okta.developer.gateway.service.dto.UserDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -17,22 +13,20 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Integration tests for {@link UserMapper}.
+ * Unit tests for {@link UserMapper}.
  */
-@SpringBootTest(classes = {AlertApp.class, TestSecurityConfiguration.class})
-public class UserMapperIT {
+public class UserMapperTest {
 
     private static final String DEFAULT_LOGIN = "johndoe";
     private static final String DEFAULT_ID = "id1";
 
-    @Autowired
     private UserMapper userMapper;
-
     private User user;
     private UserDTO userDto;
 
     @BeforeEach
     public void init() {
+        userMapper = new UserMapper();
         user = new User();
         user.setLogin(DEFAULT_LOGIN);
         user.setActivated(true);

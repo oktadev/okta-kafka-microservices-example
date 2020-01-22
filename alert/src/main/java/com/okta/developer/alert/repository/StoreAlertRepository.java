@@ -1,4 +1,5 @@
 package com.okta.developer.alert.repository;
+
 import com.okta.developer.alert.domain.StoreAlert;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;

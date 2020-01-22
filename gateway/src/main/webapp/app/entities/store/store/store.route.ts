@@ -1,24 +1,33 @@
 import { Injectable } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
-import { Resolve, ActivatedRouteSnapshot, Routes } from '@angular/router';
+import { Resolve, ActivatedRouteSnapshot, Routes, Router } from '@angular/router';
+import { Observable, of, EMPTY } from 'rxjs';
+import { flatMap } from 'rxjs/operators';
+
 import { UserRouteAccessService } from 'app/core/auth/user-route-access-service';
-import { Observable, of } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { Store } from 'app/shared/model/store/store.model';
+import { IStore, Store } from 'app/shared/model/store/store.model';
 import { StoreService } from './store.service';
 import { StoreComponent } from './store.component';
 import { StoreDetailComponent } from './store-detail.component';
 import { StoreUpdateComponent } from './store-update.component';
-import { IStore } from 'app/shared/model/store/store.model';
 
 @Injectable({ providedIn: 'root' })
 export class StoreResolve implements Resolve<IStore> {
-  constructor(private service: StoreService) {}
+  constructor(private service: StoreService, private router: Router) {}
 
-  resolve(route: ActivatedRouteSnapshot): Observable<IStore> {
+  resolve(route: ActivatedRouteSnapshot): Observable<IStore> | Observable<never> {
     const id = route.params['id'];
     if (id) {
-      return this.service.find(id).pipe(map((store: HttpResponse<Store>) => store.body));
+      return this.service.find(id).pipe(
+        flatMap((store: HttpResponse<Store>) => {
+          if (store.body) {
+            return of(store.body);
+          } else {
+            this.router.navigate(['404']);
+            return EMPTY;
+          }
+        })
+      );
     }
     return of(new Store());
   }

@@ -1,4 +1,5 @@
 package com.okta.developer.store.repository;
+
 import com.okta.developer.store.domain.Store;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.MongoRepository;
