@@ -1,6 +1,6 @@
 # Microservices Architecture with JHipster and Kafka
 
-This repository contains a microservices architecture with Kafka support and includes docker-compose configuration for running the services locally. The tutorial for creating this example is available on [Okta Developer Blog]().
+This repository contains a microservices architecture with Kafka support and includes docker-compose configuration for running the services locally. The tutorial for creating this example is available on the [Okta Developer Blog]().
 
 **Prerequisites:**
 - [Java 8](https://adoptopenjdk.net/)
@@ -12,6 +12,7 @@ This repository contains a microservices architecture with Kafka support and inc
 ## Getting Started
 
 To install this example, run the following commands:
+
 ```bash
 git clone https://github.com/oktadeveloper/okta-kafka-microservices-example.git jhipster-kafka
 cd jhipster-kafka
@@ -44,27 +45,27 @@ Create an `docker-compose/.env` file with the following content:
 ```
 OIDC_CLIENT_ID={yourClientId}
 OIDC_CLIENT_SECRET={yourClientSecret}
-RESOURCE_ISSUER_URI={yourOrgUrl}/oauth2/default
+OIDC_ISSUER_URI={yourOrgUrl}/oauth2/default
 MAIL_USERNAME{yourGmailUsername}
 MAIL_PASSWORD={yourGmailPassword}
 DISTRIBUTION_LIST={anotherEmailAccount}
 ```
 
-Build the Docker images for blog, store and gateway by running the following command in each directory.
+Build the Docker images for the blog, store, and gateway apps by running the following command in each directory.
 
 ```bash
 ./mvnw -ntp -Pprod verify jib:dockerBuild
 ```
 
-Once all the services are built, run them with Docker Compose:
+Once all the services are built, cd into the `docker-compose` directory and run them:
 
 ```bash
 docker-compose up
 ```
 
-Login to the JHipster Registry at <http://localhost:8761> with your Okta user credentials and check the service's health.
+Log in to the JHipster Registry at <http://localhost:8761> with your Okta user credentials and check each service's health.
 
-Once everything is up, go to the gateway at <http://localhost:8080> and log in. Create a store entity and then update it. The `alert` microservice should log entries when processing the received message from the `store` service and you should receive an email.
+Once everything is up, go to the gateway at <http://localhost:8080> and log in. Create a store entity **and** then update it. The `alert` microservice should log entries when processing the received message from the `store` service and you should receive an email.
 
 ## Links
 
