@@ -27,7 +27,7 @@
     "clientPackageManager": "npm",
     "cacheProvider": "hazelcast",
     "embeddableLaunchScript": false,
-    "creationTimestamp": 1578616845523,
+    "creationTimestamp": 1579658097085,
     "entitySuffix": "",
     "dtoSuffix": "DTO",
     "otherModules": [],

@@ -17,7 +17,7 @@ logging:
   level:
     ROOT: INFO
     io.github.jhipster: INFO
-    com.okta.developer.alert: INFO
+    com.okta.developer.alert: DEBUG
 
 eureka:
   instance:
@@ -88,8 +88,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: user@email.com
-    password: 123456
+    username: {username}
+    password: {password}
     protocol: smtp
     tls: true
     properties.mail.smtp:

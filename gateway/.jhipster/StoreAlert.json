@@ -24,7 +24,7 @@
         }
     ],
     "relationships": [],
-    "changelogDate": "20200110004041",
+    "changelogDate": "20200122015453",
     "entityTableName": "store_alert",
     "dto": "no",
     "pagination": "no",

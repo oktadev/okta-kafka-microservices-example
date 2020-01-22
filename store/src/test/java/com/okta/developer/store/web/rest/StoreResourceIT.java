@@ -230,7 +230,7 @@ public class StoreResourceIT {
             .andExpect(jsonPath("$.[*].createTimestamp").value(hasItem(DEFAULT_CREATE_TIMESTAMP.toString())))
             .andExpect(jsonPath("$.[*].updateTimestamp").value(hasItem(DEFAULT_UPDATE_TIMESTAMP.toString())));
     }
-    
+
     @Test
     public void getStore() throws Exception {
         // Initialize the database
