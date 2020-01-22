@@ -63,9 +63,9 @@ Once all the services are built, cd into the `docker-compose` directory and run 
 docker-compose up
 ```
 
-Log in to the JHipster Registry at <http://localhost:8761> with your Okta user credentials and check each service's health.
+Log in to the JHipster Registry at `<http://localhost:8761>` with your Okta user credentials and check each service's health.
 
-Once everything is up, go to the gateway at <http://localhost:8080> and log in. Create a store entity **and** then update it. The `alert` microservice should log entries when processing the received message from the `store` service and you should receive an email.
+Once everything is up, go to the gateway at `<http://localhost:8080>` and log in. Create a store entity **and** then update it. The `alert` microservice should log entries when processing the received message from the `store` service and you should receive an email.
 
 ## Links
 
