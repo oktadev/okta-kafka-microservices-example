@@ -16,7 +16,8 @@
 logging:
   level:
     ROOT: DEBUG
-    io.github.jhipster: DEBUG
+    tech.jhipster: DEBUG
+    org.hibernate.SQL: DEBUG
     com.okta.developer.gateway: DEBUG
 
 eureka:
@@ -27,12 +28,6 @@ eureka:
       defaultZone: http://admin:${jhipster.registry.password}@localhost:8761/eureka/
 
 spring:
-  profiles:
-    active: dev
-    include:
-      - swagger
-      # Uncomment to activate TLS for the dev profile
-      #- tls
   devtools:
     restart:
       enabled: true
@@ -42,40 +37,36 @@ spring:
   jackson:
     serialization:
       indent-output: true
-  datasource:
-    type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:h2:file:./target/h2db/db/gateway;DB_CLOSE_DELAY=-1
-    username: gateway
-    password:
-    hikari:
-      poolName: Hikari
-      auto-commit: false
+  cloud:
+    config:
+      uri: http://admin:${jhipster.registry.password}@localhost:8761/config
+      # name of the config server's property source (file.yml) that we want to use
+      name: gateway
+      profile: dev
+      label: main # toggle to switch to a different version of the configuration as stored in git
+      # it can be set to any label, branch or commit of the configuration source Git repository
   h2:
     console:
+      # disable spring boot built-in h2-console since we start it manually with correct configuration
       enabled: false
-  jpa:
-    database-platform: io.github.jhipster.domain.util.FixedH2Dialect
-    database: H2
-    show-sql: true
-    properties:
-      hibernate.id.new_generator_mappings: true
-      hibernate.connection.provider_disables_autocommit: true
-      hibernate.cache.use_second_level_cache: true
-      hibernate.cache.use_query_cache: false
-      hibernate.generate_statistics: false
   liquibase:
     # Remove 'faker' if you do not want the sample data to be loaded automatically
     contexts: dev, faker
-  mail:
-    host: localhost
-    port: 25
-    username:
-    password:
+    url: jdbc:h2:file:./target/h2db/db/gateway;DB_CLOSE_DELAY=-1
   messages:
     cache-duration: PT1S # 1 second, see the ISO 8601 standard
+  r2dbc:
+    url: r2dbc:h2:file://././target/h2db/db/gateway;DB_CLOSE_DELAY=-1
+    username: gateway
+    password:
   thymeleaf:
     cache: false
   sleuth:
+    # https://github.com/spring-projects/spring-framework/issues/27844#issuescomment-1002866885
+    # https://github.com/spring-cloud/spring-cloud-sleuth/issues/2094
+    async:
+      enabled: false
+    enabled: false
     sampler:
       probability: 1 # report 100% of traces
   zipkin: # Use the "zipkin" Maven profile to have the Spring Cloud Zipkin dependencies
@@ -100,26 +91,19 @@ jhipster:
       enabled: false
       limit: 100000
       duration-in-seconds: 3600
-    authorized-microservices-endpoints: # Access Control Policy, if left empty for a route, all endpoints will be accessible
-      app1: /api,/v2/api-docs # recommended dev configuration
-  cache: # Cache configuration
-    ehcache: # Ehcache configuration
-      time-to-live-seconds: 3600 # By default objects stay 1 hour in the cache
-      max-entries: 100 # Number of objects in each cache entry
-  # CORS is only enabled by default with the "dev" profile, so BrowserSync can access the API
+  registry:
+    password: admin
+  # CORS is only enabled by default with the "dev" profile
   cors:
-    allowed-origins: '*'
+    # Allow Ionic for JHipster by default (* no longer allowed in Spring Boot 2.4+)
+    allowed-origins: 'http://localhost:8100,https://localhost:8100,http://localhost:9000,https://localhost:9000,http://localhost:4200,https://localhost:4200'
+    # Enable CORS when running in GitHub Codespaces
+    allowed-origin-patterns: 'https://*.githubpreview.dev'
     allowed-methods: '*'
     allowed-headers: '*'
-    exposed-headers: 'Authorization,Link,X-Total-Count'
+    exposed-headers: 'Authorization,Link,X-Total-Count,X-${jhipster.clientApp.name}-alert,X-${jhipster.clientApp.name}-error,X-${jhipster.clientApp.name}-params'
     allow-credentials: true
     max-age: 1800
-  mail: # specific JHipster mail property, for standard properties see MailProperties
-    base-url: http://127.0.0.1:8080
-  metrics:
-    logs: # Reports metrics in the logs
-      enabled: false
-      report-frequency: 60 # in seconds
   logging:
     use-json-format: false # By default, logs are not in Json format
     logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration
@@ -127,9 +111,6 @@ jhipster:
       host: localhost
       port: 5000
       queue-size: 512
-  audit-events:
-    retention-period: 30 # Number of days before audit events are deleted.
-
 # ===================================================================
 # Application specific properties
 # Add your own application properties here, see the ApplicationProperties class

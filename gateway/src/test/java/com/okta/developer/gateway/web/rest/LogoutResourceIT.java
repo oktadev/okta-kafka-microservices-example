@@ -1,84 +1,79 @@
 package com.okta.developer.gateway.web.rest;
 
-import com.okta.developer.gateway.GatewayApp;
-import com.okta.developer.gateway.config.TestSecurityConfiguration;
+import static com.okta.developer.gateway.test.util.OAuth2TestUtil.ID_TOKEN;
+import static com.okta.developer.gateway.test.util.OAuth2TestUtil.authenticationToken;
+import static com.okta.developer.gateway.test.util.OAuth2TestUtil.registerAuthenticationToken;
+import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.*;
+
+import com.okta.developer.gateway.IntegrationTest;
 import com.okta.developer.gateway.security.AuthoritiesConstants;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.core.oidc.OidcIdToken;
-import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
-import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
-
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
+import org.springframework.test.web.reactive.server.WebTestClient;
 
 /**
  * Integration tests for the {@link LogoutResource} REST controller.
  */
-@SpringBootTest(classes = {GatewayApp.class, TestSecurityConfiguration.class})
-public class LogoutResourceIT {
+@IntegrationTest
+class LogoutResourceIT {
 
     @Autowired
-    private ClientRegistrationRepository registrations;
+    private ReactiveClientRegistrationRepository registrations;
 
     @Autowired
-    private WebApplicationContext context;
+    private ApplicationContext context;
 
-    private final static String ID_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
-        ".eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsIm" +
-        "p0aSI6ImQzNWRmMTRkLTA5ZjYtNDhmZi04YTkzLTdjNmYwMzM5MzE1OSIsImlhdCI6MTU0M" +
-        "Tk3MTU4MywiZXhwIjoxNTQxOTc1MTgzfQ.QaQOarmV8xEUYV7yvWzX3cUE_4W1luMcWCwpr" +
-        "oqqUrg";
+    @Autowired
+    private ReactiveOAuth2AuthorizedClientService authorizedClientService;
 
-    private MockMvc restLogoutMockMvc;
+    @Autowired
+    private ClientRegistration clientRegistration;
+
+    private WebTestClient webTestClient;
+
+    private Map<String, Object> claims;
 
     @BeforeEach
-    public void before() throws Exception {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("groups", "ROLE_USER");
+    public void before() {
+        claims = new HashMap<>();
+        claims.put("groups", Collections.singletonList(AuthoritiesConstants.USER));
         claims.put("sub", 123);
-        OidcIdToken idToken = new OidcIdToken(ID_TOKEN, Instant.now(),
-            Instant.now().plusSeconds(60), claims);
-        SecurityContextHolder.getContext().setAuthentication(authenticationToken(idToken));
-        SecurityContextHolderAwareRequestFilter authInjector = new SecurityContextHolderAwareRequestFilter();
-        authInjector.afterPropertiesSet();
 
-        this.restLogoutMockMvc = MockMvcBuilders.webAppContextSetup(this.context).build();
+        this.webTestClient = WebTestClient.bindToApplicationContext(this.context).apply(springSecurity()).configureClient().build();
     }
 
     @Test
-    public void getLogoutInformation() throws Exception {
-        String logoutUrl = this.registrations.findByRegistrationId("oidc").getProviderDetails()
-            .getConfigurationMetadata().get("end_session_endpoint").toString();
-        restLogoutMockMvc.perform(post("/api/logout"))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-            .andExpect(jsonPath("$.logoutUrl").value(logoutUrl))
-            .andExpect(jsonPath("$.idToken").value(ID_TOKEN));
-    }
-
-    private OAuth2AuthenticationToken authenticationToken(OidcIdToken idToken) {
-        Collection<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority(AuthoritiesConstants.USER));
-        OidcUser user = new DefaultOidcUser(authorities, idToken);
-        return new OAuth2AuthenticationToken(user, authorities, "oidc");
+    void getLogoutInformation() {
+        final String ORIGIN_URL = "http://localhost:8080";
+        String logoutUrl =
+            this.registrations.findByRegistrationId("oidc")
+                .map(oidc -> oidc.getProviderDetails().getConfigurationMetadata().get("end_session_endpoint").toString())
+                .block();
+        logoutUrl = logoutUrl + "?id_token_hint=" + ID_TOKEN + "&post_logout_redirect_uri=" + ORIGIN_URL;
+        this.webTestClient.mutateWith(csrf())
+            .mutateWith(
+                mockAuthentication(registerAuthenticationToken(authorizedClientService, clientRegistration, authenticationToken(claims)))
+            )
+            .post()
+            .uri("http://localhost:8080/api/logout")
+            .header(HttpHeaders.ORIGIN, ORIGIN_URL)
+            .exchange()
+            .expectStatus()
+            .isOk()
+            .expectHeader()
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .expectBody()
+            .jsonPath("$.logoutUrl")
+            .isEqualTo(logoutUrl);
     }
 }

@@ -1,0 +1,64 @@
+application {
+  config {
+    baseName gateway,
+    packageName com.okta.developer.gateway,
+    applicationType gateway,
+    authenticationType oauth2,
+    prodDatabaseType postgresql,
+    serviceDiscoveryType eureka,
+    testFrameworks [cypress]
+  }
+  entities Store, StoreAlert
+}
+
+application {
+  config {
+    baseName store,
+    packageName com.okta.developer.store,
+    applicationType microservice,
+    authenticationType oauth2,
+    databaseType mongodb,
+    devDatabaseType mongodb,
+    prodDatabaseType mongodb,
+    enableHibernateCache false,
+    serverPort 8082,
+    serviceDiscoveryType eureka
+    messageBroker kafka
+  }
+  entities Store
+}
+
+application {
+  config {
+    baseName alert,
+    packageName com.okta.developer.alert,
+    applicationType microservice,
+    authenticationType oauth2,
+    serverPort 8082,
+    serviceDiscoveryType eureka
+    messageBroker kafka
+  }
+  entities StoreAlert
+}
+
+enum StoreStatus {
+  OPEN,
+  CLOSED
+}
+
+entity Store {
+  name String required,
+  address String required,
+  status StoreStatus,
+  createTimestamp Instant required,
+  updateTimestamp Instant
+}
+
+entity StoreAlert {
+  storeName String required,
+  storeStatus String required,
+  timestamp Instant required
+}
+
+microservice Store with store
+microservice StoreAlert with alert

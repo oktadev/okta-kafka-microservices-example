@@ -1,10 +1,8 @@
 package com.okta.developer.store.client;
 
-import org.springframework.context.annotation.Bean;
-
-import feign.RequestInterceptor;
-
 import com.okta.developer.store.security.oauth2.AuthorizationHeaderUtil;
+import feign.RequestInterceptor;
+import org.springframework.context.annotation.Bean;
 
 public class OAuth2InterceptedFeignConfiguration {
 

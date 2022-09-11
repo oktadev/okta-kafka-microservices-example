@@ -16,8 +16,8 @@
 logging:
   level:
     ROOT: INFO
-    io.github.jhipster: INFO
-    com.okta.developer.alert: DEBUG
+    tech.jhipster: INFO
+    com.okta.developer.alert: INFO
 
 eureka:
   instance:
@@ -33,72 +33,53 @@ management:
         enabled: false
 
 spring:
-  devtools:
-    restart:
-      enabled: false
-    livereload:
-      enabled: false
-  kafka:
-    consumer:
-      bootstrap-servers: localhost:9092
-      group-id: group_id
-      auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-    producer:
-      bootstrap-servers: localhost:9092
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer
-  datasource:
-    type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:mysql://localhost:3306/alert?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC&createDatabaseIfNotExist=true
-    username: root
-    password:
-    hikari:
-      poolName: Hikari
-      auto-commit: false
-      data-source-properties:
-        cachePrepStmts: true
-        prepStmtCacheSize: 250
-        prepStmtCacheSqlLimit: 2048
-        useServerPrepStmts: true
-  jpa:
-    database-platform: org.hibernate.dialect.MySQL8Dialect
-    database: MYSQL
-    show-sql: false
-    properties:
-      hibernate.id.new_generator_mappings: true
-      hibernate.connection.provider_disables_autocommit: true
-      hibernate.cache.use_second_level_cache: true
-      hibernate.cache.use_query_cache: false
-      hibernate.generate_statistics: false
-      # modify batch size as necessary
-      hibernate.jdbc.batch_size: 25
-      hibernate.order_inserts: true
-      hibernate.order_updates: true
-      hibernate.query.fail_on_pagination_over_collection_fetch: true
-      hibernate.query.in_clause_parameter_padding: true
-      hibernate.cache.region.factory_class: com.hazelcast.hibernate.HazelcastCacheRegionFactory
-      hibernate.cache.hazelcast.instance_name: alert
-      hibernate.cache.use_minimal_puts: true
-      hibernate.cache.hazelcast.use_lite_member: true
-  # Replace by 'prod, faker' to add the faker context and have sample data loaded in production
-  liquibase:
-    contexts: prod
   mail:
     host: smtp.gmail.com
     port: 587
-    username: {username}
-    password: {password}
+    username: { username }
     protocol: smtp
     tls: true
     properties.mail.smtp:
       auth: true
       starttls.enable: true
-      ssl.trust: smtp.gmail.com
+  devtools:
+    restart:
+      enabled: false
+    livereload:
+      enabled: false
+  cloud:
+    config:
+      retry:
+        initial-interval: 1000
+        max-interval: 2000
+        max-attempts: 100
+      uri: http://admin:${jhipster.registry.password}@localhost:8761/config
+      # name of the config server's property source (file.yml) that we want to use
+      name: alert
+      profile: prod
+      label: main # toggle to switch to a different version of the configuration as stored in git
+      # it can be set to any label, branch or commit of the configuration source Git repository
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:postgresql://localhost:5432/alert
+    username: alert
+    password:
+    hikari:
+      poolName: Hikari
+      auto-commit: false
+  jpa:
+    database-platform: tech.jhipster.domain.util.FixedPostgreSQL10Dialect
+  # Replace by 'prod, faker' to add the faker context and have sample data loaded in production
+  liquibase:
+    contexts: prod
   thymeleaf:
     cache: true
   sleuth:
+    # https://github.com/spring-projects/spring-framework/issues/27844#issuescomment-1002866885
+    # https://github.com/spring-cloud/spring-cloud-sleuth/issues/2094
+    async:
+      enabled: false
+    enabled: false
     sampler:
       probability: 1 # report 100% of traces
   zipkin: # Use the "zipkin" Maven profile to have the Spring Cloud Zipkin dependencies
@@ -113,25 +94,26 @@ spring:
 # keytool -genkey -alias alert -storetype PKCS12 -keyalg RSA -keysize 2048 -keystore keystore.p12 -validity 3650
 #
 # You can also use Let's Encrypt:
-# https://maximilian-boehm.com/hp2121/Create-a-Java-Keystore-JKS-from-Let-s-Encrypt-Certificates.htm
+# See details in topic "Create a Java Keystore (.JKS) from Let's Encrypt Certificates" on https://maximilian-boehm.com/en-gb/blog
 #
 # Then, modify the server.ssl properties so your "server" configuration looks like:
 #
 # server:
-#    port: 443
-#    ssl:
-#        key-store: classpath:config/tls/keystore.p12
-#        key-store-password: password
-#        key-store-type: PKCS12
-#        key-alias: alert
-#        # The ciphers suite enforce the security by deactivating some old and deprecated SSL cipher, this list was tested against SSL Labs (https://www.ssllabs.com/ssltest/)
-#        ciphers: TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 ,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256 ,TLS_DHE_RSA_WITH_AES_256_GCM_SHA384 ,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,TLS_DHE_RSA_WITH_AES_128_CBC_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA256,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_256_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA,TLS_RSA_WITH_CAMELLIA_256_CBC_SHA,TLS_DHE_RSA_WITH_CAMELLIA_128_CBC_SHA,TLS_RSA_WITH_CAMELLIA_128_CBC_SHA
+#   port: 443
+#   ssl:
+#     key-store: classpath:config/tls/keystore.p12
+#     key-store-password: password
+#     key-store-type: PKCS12
+#     key-alias: selfsigned
+#     # The ciphers suite enforce the security by deactivating some old and deprecated SSL cipher, this list was tested against SSL Labs (https://www.ssllabs.com/ssltest/)
+#     ciphers: TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 ,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256 ,TLS_DHE_RSA_WITH_AES_256_GCM_SHA384 ,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,TLS_DHE_RSA_WITH_AES_128_CBC_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA256,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_256_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA,TLS_RSA_WITH_CAMELLIA_256_CBC_SHA,TLS_DHE_RSA_WITH_CAMELLIA_128_CBC_SHA,TLS_RSA_WITH_CAMELLIA_128_CBC_SHA
 # ===================================================================
 server:
   port: 8082
+  shutdown: graceful # see https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-graceful-shutdown
   compression:
     enabled: true
-    mime-types: text/html,text/xml,text/plain,text/css, application/javascript, application/json
+    mime-types: text/html,text/xml,text/plain,text/css,application/javascript,application/json,image/svg+xml
     min-response-size: 1024
 
 # ===================================================================
@@ -145,19 +127,11 @@ jhipster:
     cache: # Used by the CachingHttpHeadersFilter
       timeToLiveInDays: 1461
   cache: # Cache configuration
-    hazelcast: # Hazelcast distributed cache
-      time-to-live-seconds: 3600
-      backup-count: 1
-      management-center: # Full reference is available at: http://docs.hazelcast.org/docs/management-center/3.9/manual/html/Deploying_and_Starting.html
-        enabled: false
-        update-interval: 3
-        url:
-  mail: # specific JHipster mail property, for standard properties see MailProperties
-    base-url: http://my-server-url-to-change # Modify according to your server's URL
-  metrics:
-    logs: # Reports metrics in the logs
-      enabled: false
-      report-frequency: 60 # in seconds
+    ehcache: # Ehcache configuration
+      time-to-live-seconds: 3600 # By default objects stay 1 hour in the cache
+      max-entries: 1000 # Number of objects in each cache entry
+  registry:
+    password: admin
   logging:
     use-json-format: false # By default, logs are not in Json format
     logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration
@@ -165,9 +139,6 @@ jhipster:
       host: localhost
       port: 5000
       queue-size: 512
-  audit-events:
-    retention-period: 30 # Number of days before audit events are deleted.
-
 # ===================================================================
 # Application specific properties
 # Add your own application properties here, see the ApplicationProperties class

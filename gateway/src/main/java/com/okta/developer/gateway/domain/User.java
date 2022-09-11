@@ -1,29 +1,25 @@
 package com.okta.developer.gateway.domain;
 
-import com.okta.developer.gateway.config.Constants;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.apache.commons.lang3.StringUtils;
-import org.hibernate.annotations.BatchSize;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
-import javax.persistence.*;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
+import com.okta.developer.gateway.config.Constants;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 /**
  * A user.
  */
-@Entity
-@Table(name = "jhi_user")
-@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+@Table("jhi_user")
 public class User extends AbstractAuditingEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -34,42 +30,33 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @NotNull
     @Pattern(regexp = Constants.LOGIN_REGEX)
     @Size(min = 1, max = 50)
-    @Column(length = 50, unique = true, nullable = false)
     private String login;
 
     @Size(max = 50)
-    @Column(name = "first_name", length = 50)
+    @Column("first_name")
     private String firstName;
 
     @Size(max = 50)
-    @Column(name = "last_name", length = 50)
+    @Column("last_name")
     private String lastName;
 
     @Email
     @Size(min = 5, max = 254)
-    @Column(length = 254, unique = true)
     private String email;
 
     @NotNull
-    @Column(nullable = false)
     private boolean activated = false;
 
     @Size(min = 2, max = 10)
-    @Column(name = "lang_key", length = 10)
+    @Column("lang_key")
     private String langKey;
 
     @Size(max = 256)
-    @Column(name = "image_url", length = 256)
+    @Column("image_url")
     private String imageUrl;
 
     @JsonIgnore
-    @ManyToMany
-    @JoinTable(
-        name = "jhi_user_authority",
-        joinColumns = {@JoinColumn(name = "user_id", referencedColumnName = "id")},
-        inverseJoinColumns = {@JoinColumn(name = "authority_name", referencedColumnName = "name")})
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-    @BatchSize(size = 20)
+    @Transient
     private Set<Authority> authorities = new HashSet<>();
 
     public String getId() {
@@ -121,7 +108,7 @@ public class User extends AbstractAuditingEntity implements Serializable {
         this.imageUrl = imageUrl;
     }
 
-    public boolean getActivated() {
+    public boolean isActivated() {
         return activated;
     }
 
@@ -158,9 +145,11 @@ public class User extends AbstractAuditingEntity implements Serializable {
 
     @Override
     public int hashCode() {
-        return 31;
+        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
+        return getClass().hashCode();
     }
 
+    // prettier-ignore
     @Override
     public String toString() {
         return "User{" +

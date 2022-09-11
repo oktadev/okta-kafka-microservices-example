@@ -1,0 +1,88 @@
+<div>
+  <h2 id="page-heading" data-cy="StoreAlertHeading">
+    <span jhiTranslate="gatewayApp.alertStoreAlert.home.title">Store Alerts</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading">
+        <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
+        <span jhiTranslate="gatewayApp.alertStoreAlert.home.refreshListLabel">Refresh list</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-store-alert"
+        [routerLink]="['/store-alert/new']"
+      >
+        <fa-icon icon="plus"></fa-icon>
+        <span jhiTranslate="gatewayApp.alertStoreAlert.home.createLabel"> Create a new Store Alert </span>
+      </button>
+    </div>
+  </h2>
+
+  <jhi-alert-error></jhi-alert-error>
+
+  <jhi-alert></jhi-alert>
+
+  <div class="alert alert-warning" id="no-result" *ngIf="storeAlerts?.length === 0">
+    <span jhiTranslate="gatewayApp.alertStoreAlert.home.notFound">No Store Alerts found</span>
+  </div>
+
+  <div class="table-responsive" id="entities" *ngIf="storeAlerts && storeAlerts.length > 0">
+    <table class="table table-striped" aria-describedby="page-heading">
+      <thead>
+        <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
+          <th scope="col" jhiSortBy="id"><span jhiTranslate="global.field.id">ID</span> <fa-icon icon="sort"></fa-icon></th>
+          <th scope="col" jhiSortBy="storeName">
+            <span jhiTranslate="gatewayApp.alertStoreAlert.storeName">Store Name</span> <fa-icon icon="sort"></fa-icon>
+          </th>
+          <th scope="col" jhiSortBy="storeStatus">
+            <span jhiTranslate="gatewayApp.alertStoreAlert.storeStatus">Store Status</span> <fa-icon icon="sort"></fa-icon>
+          </th>
+          <th scope="col" jhiSortBy="timestamp">
+            <span jhiTranslate="gatewayApp.alertStoreAlert.timestamp">Timestamp</span> <fa-icon icon="sort"></fa-icon>
+          </th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let storeAlert of storeAlerts; trackBy: trackId" data-cy="entityTable">
+          <td>
+            <a [routerLink]="['/store-alert', storeAlert.id, 'view']">{{ storeAlert.id }}</a>
+          </td>
+          <td>{{ storeAlert.storeName }}</td>
+          <td>{{ storeAlert.storeStatus }}</td>
+          <td>{{ storeAlert.timestamp | formatMediumDatetime }}</td>
+          <td class="text-end">
+            <div class="btn-group">
+              <button
+                type="submit"
+                [routerLink]="['/store-alert', storeAlert.id, 'view']"
+                class="btn btn-info btn-sm"
+                data-cy="entityDetailsButton"
+              >
+                <fa-icon icon="eye"></fa-icon>
+                <span class="d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
+              </button>
+
+              <button
+                type="submit"
+                [routerLink]="['/store-alert', storeAlert.id, 'edit']"
+                class="btn btn-primary btn-sm"
+                data-cy="entityEditButton"
+              >
+                <fa-icon icon="pencil-alt"></fa-icon>
+                <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
+              </button>
+
+              <button type="submit" (click)="delete(storeAlert)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                <fa-icon icon="times"></fa-icon>
+                <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

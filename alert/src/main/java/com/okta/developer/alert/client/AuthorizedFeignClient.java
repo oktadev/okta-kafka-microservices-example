@@ -1,17 +1,15 @@
 package com.okta.developer.alert.client;
 
+import java.lang.annotation.*;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.FeignClientsConfiguration;
 import org.springframework.core.annotation.AliasFor;
-
-import java.lang.annotation.*;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
 @FeignClient
 public @interface AuthorizedFeignClient {
-
     @AliasFor(annotation = FeignClient.class, attribute = "name")
     String name() default "";
 
@@ -48,7 +46,7 @@ public @interface AuthorizedFeignClient {
     Class<?> fallback() default void.class;
 
     /**
-     * Path prefix to be used by all method-level mappings. Can be used with or without {@code @RibbonClient}.
+     * Path prefix to be used by all method-level mappings.
      * @return the path prefix to be used by all method-level mappings.
      */
     String path() default "";

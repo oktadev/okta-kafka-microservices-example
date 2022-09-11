@@ -52,8 +52,9 @@ local.properties
 
 # STS-specific
 /.sts4-cache/*
+
 ######################
-# Intellij
+# IntelliJ
 ######################
 .idea/
 *.iml
@@ -67,7 +68,12 @@ out/
 ######################
 # Visual Studio Code
 ######################
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
 
 ######################
 # Maven
@@ -144,3 +150,9 @@ Desktop.ini
 # ESLint
 ######################
 .eslintcache
+
+######################
+# Code coverage
+######################
+/coverage/
+/.nyc_output/

@@ -3,6 +3,7 @@
     "alertStoreAlert": {
       "home": {
         "title": "Store Alerts",
+        "refreshListLabel": "Refresh list",
         "createLabel": "Create a new Store Alert",
         "createOrEditLabel": "Create or edit a Store Alert",
         "notFound": "No Store Alerts found"
@@ -13,6 +14,7 @@
       "detail": {
         "title": "Store Alert"
       },
+      "id": "ID",
       "storeName": "Store Name",
       "storeStatus": "Store Status",
       "timestamp": "Timestamp"

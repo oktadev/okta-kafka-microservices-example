@@ -1,17 +1,17 @@
 package com.okta.developer.gateway.web.rest;
 
+import com.okta.developer.gateway.security.AuthoritiesConstants;
 import com.okta.developer.gateway.web.rest.vm.RouteVM;
-
 import java.util.ArrayList;
 import java.util.List;
-
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.cloud.netflix.zuul.filters.Route;
-import org.springframework.cloud.netflix.zuul.filters.RouteLocator;
+import org.springframework.cloud.gateway.route.Route;
+import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.http.*;
 import org.springframework.security.access.annotation.Secured;
-import com.okta.developer.gateway.security.AuthoritiesConstants;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 
 /**
  * REST controller for managing Gateway configuration.
@@ -23,6 +23,9 @@ public class GatewayResource {
     private final RouteLocator routeLocator;
 
     private final DiscoveryClient discoveryClient;
+
+    @Value("${spring.application.name}")
+    private String appName;
 
     public GatewayResource(RouteLocator routeLocator, DiscoveryClient discoveryClient) {
         this.routeLocator = routeLocator;
@@ -37,14 +40,21 @@ public class GatewayResource {
     @GetMapping("/routes")
     @Secured(AuthoritiesConstants.ADMIN)
     public ResponseEntity<List<RouteVM>> activeRoutes() {
-        List<Route> routes = routeLocator.getRoutes();
+        Flux<Route> routes = routeLocator.getRoutes();
         List<RouteVM> routeVMs = new ArrayList<>();
-        routes.forEach(route -> {
+        routes.subscribe(route -> {
             RouteVM routeVM = new RouteVM();
-            routeVM.setPath(route.getFullPath());
-            routeVM.setServiceId(route.getId());
-            routeVM.setServiceInstances(discoveryClient.getInstances(route.getLocation()));
-            routeVMs.add(routeVM);
+            // Manipulate strings to make Gateway routes look like Zuul's
+            String predicate = route.getPredicate().toString();
+            String path = predicate.substring(predicate.indexOf("[") + 1, predicate.indexOf("]"));
+            routeVM.setPath(path);
+            String serviceId = route.getId().substring(route.getId().indexOf("_") + 1).toLowerCase();
+            routeVM.setServiceId(serviceId);
+            // Exclude gateway app from routes
+            if (!serviceId.equalsIgnoreCase(appName)) {
+                routeVM.setServiceInstances(discoveryClient.getInstances(serviceId));
+                routeVMs.add(routeVM);
+            }
         });
         return ResponseEntity.ok(routeVMs);
     }

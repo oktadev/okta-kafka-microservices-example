@@ -1,38 +1,76 @@
-version: '2'
+# This configuration is intended for development purpose, it's **your** responsibility to harden it for production
+version: '3.8'
 services:
   alert-app:
     image: alert
     environment:
       - _JAVA_OPTIONS=-Xmx512m -Xms256m
-      - SPRING_PROFILES_ACTIVE=prod,swagger
+      - SPRING_PROFILES_ACTIVE=prod,api-docs
       - MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED=true
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://admin:$${jhipster.registry.password}@jhipster-registry:8761/eureka
       - SPRING_CLOUD_CONFIG_URI=http://admin:$${jhipster.registry.password}@jhipster-registry:8761/config
-      - SPRING_DATASOURCE_URL=jdbc:mysql://alert-mysql:3306/alert?useUnicode=true&characterEncoding=utf8&useSSL=false&createDatabaseIfNotExist=true
-      - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_ISSUER_URI=http://keycloak:9080/auth/realms/jhipster
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://alert-postgresql:5432/alert
+      - SPRING_LIQUIBASE_URL=jdbc:postgresql://alert-postgresql:5432/alert
+      - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_ISSUER_URI=http://keycloak:9080/realms/jhipster
       - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_ID=internal
       - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_SECRET=internal
       - JHIPSTER_SLEEP=30 # gives time for other services to boot before the application
-      - KAFKA_BOOTSTRAPSERVERS=kafka:9092
-  alert-mysql:
-    extends:
-      file: mysql.yml
-      service: alert-mysql
+      - SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS=kafka:9092
+  alert-postgresql:
+    image: postgres:14.4
+    # volumes:
+    #   - ~/volumes/jhipster/alert/postgresql/:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=alert
+      - POSTGRES_PASSWORD=
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    # If you want to expose these ports outside your dev PC,
+    # remove the "127.0.0.1:" prefix
+    ports:
+      - 127.0.0.1:5432:5432
   kafka:
-    extends:
-      file: kafka.yml
-      service: kafka
+    image: confluentinc/cp-kafka:7.1.1
+    # If you want to expose these ports outside your dev PC,
+    # remove the "127.0.0.1:" prefix
+    ports:
+      - 127.0.0.1:9092:9092
     environment:
-      - KAFKA_ADVERTISED_HOST_NAME=kafka
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_ADVERTISED_HOST_NAME: kafka
   zookeeper:
-    extends:
-      file: kafka.yml
-      service: zookeeper
-  jhipster-registry:
-    extends:
-      file: jhipster-registry.yml
-      service: jhipster-registry
+    image: confluentinc/cp-zookeeper:7.1.1
     environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+  jhipster-registry:
+    image: jhipster/jhipster-registry:v7.3.0
+    volumes:
+      - ./central-server-config:/central-config
+    # When run with the "dev" Spring profile, the JHipster Registry will
+    # read the config from the local filesystem (central-server-config directory)
+    # When run with the "prod" Spring profile, it will read the configuration from a Git repository
+    # See https://www.jhipster.tech/jhipster-registry/#spring-cloud-config
+    environment:
+      - JHIPSTER_SLEEP=20
+      - _JAVA_OPTIONS=-Xmx512m -Xms256m
+      - SPRING_PROFILES_ACTIVE=dev,api-docs,oauth2
+      - SPRING_SECURITY_USER_PASSWORD=admin
+      - JHIPSTER_REGISTRY_PASSWORD=admin
       - SPRING_CLOUD_CONFIG_SERVER_COMPOSITE_0_TYPE=native
       - SPRING_CLOUD_CONFIG_SERVER_COMPOSITE_0_SEARCH_LOCATIONS=file:./central-config/docker-config/
+      # - SPRING_CLOUD_CONFIG_SERVER_COMPOSITE_0_TYPE=git
+      # - SPRING_CLOUD_CONFIG_SERVER_COMPOSITE_0_URI=https://github.com/jhipster/jhipster-registry/
+      # - SPRING_CLOUD_CONFIG_SERVER_COMPOSITE_0_SEARCH_PATHS=central-config
+      # For keycloak to work, you need to add '127.0.0.1 keycloak' to your hosts file
+      - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_ISSUER_URI=http://keycloak:9080/realms/jhipster
+      - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_ID=jhipster-registry
+      - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_SECRET=jhipster-registry
+    # If you want to expose these ports outside your dev PC,
+    # remove the "127.0.0.1:" prefix
+    ports:
+      - 127.0.0.1:8761:8761

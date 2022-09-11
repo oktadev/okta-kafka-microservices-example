@@ -1,3 +1,4 @@
+
 # ===================================================================
 # Spring Boot configuration.
 #
@@ -14,6 +15,16 @@
 # http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
 # ===================================================================
 
+---
+# Conditionally disable springdoc on missing api-docs profile
+spring:
+  config:
+    activate:
+      on-profile: '!api-docs'
+springdoc:
+  api-docs:
+    enabled: false
+---
 eureka:
   client:
     enabled: true
@@ -37,45 +48,53 @@ eureka:
       git-version: ${git.commit.id.describe:}
       git-commit: ${git.commit.id.abbrev:}
       git-branch: ${git.branch:}
-ribbon:
-  eureka:
-    enabled: true
+      context-path: ${server.servlet.context-path:}
 feign:
-  hystrix:
+  circuitbreaker:
     enabled: true
   # client:
-  #     config:
-  #         default:
-  #             connectTimeout: 5000
-  #             readTimeout: 5000
-
-# See https://github.com/Netflix/Hystrix/wiki/Configuration
-hystrix:
-  command:
-    default:
-      execution:
-        isolation:
-          strategy: SEMAPHORE
-          # See https://github.com/spring-cloud/spring-cloud-netflix/issues/1330
-          # thread:
-          #     timeoutInMilliseconds: 10000
-  shareSecurityContext: true
-
+  #   config:
+  #     default:
+  #       connectTimeout: 5000
+  #       readTimeout: 5000
 management:
   endpoints:
     web:
       base-path: /management
       exposure:
-        include: ['configprops', 'env', 'health', 'info', 'jhimetrics', 'logfile', 'loggers', 'prometheus', 'threaddump']
+        include:
+          [
+            'configprops',
+            'env',
+            'health',
+            'info',
+            'jhimetrics',
+            'jhiopenapigroups',
+            'logfile',
+            'loggers',
+            'prometheus',
+            'threaddump',
+            'caches',
+            'liquibase',
+          ]
   endpoint:
     health:
-      show-details: when-authorized
+      show-details: when_authorized
       roles: 'ROLE_ADMIN'
+      probes:
+        enabled: true
+      group:
+        liveness:
+          include: livenessState
+        readiness:
+          include: readinessState,db
     jhimetrics:
       enabled: true
   info:
     git:
       mode: full
+    env:
+      enabled: true
   health:
     mail:
       enabled: false # When using the MailService, configure an SMTP server and set this to true
@@ -100,13 +119,46 @@ management:
       application: ${spring.application.name}
     web:
       server:
-        auto-time-requests: true
+        request:
+          autotime:
+            enabled: true
 
 spring:
   autoconfigure:
     exclude: org.springframework.boot.actuate.autoconfigure.metrics.jdbc.DataSourcePoolMetricsAutoConfiguration
   application:
     name: alert
+  cloud:
+    stream:
+      kafka:
+        binder:
+          replicationFactor: 1
+          auto-create-topics: true
+          brokers: localhost:9092
+      bindings:
+        binding-in-sse:
+          destination: sse-topic
+          content-type: text/plain
+          group: alert
+        binding-out-sse:
+          destination: sse-topic
+          content-type: text/plain
+          group: alert
+        binding-in-store-alert:
+          destination: store-alerts-topic
+          content-type: application/json
+          group: store-alerts
+  profiles:
+    # The commented value for `active` can be replaced with valid Spring profiles to load.
+    # Otherwise, it will be filled in by maven when building the JAR file
+    # Either way, it can be overridden by `--spring.profiles.active` value passed in the commandline or `-Dspring.profiles.active` set in `JAVA_OPTS`
+    active: #spring.profiles.active#
+    group:
+      dev:
+        - dev
+        - api-docs
+        # Uncomment to activate TLS for the dev profile
+        #- tls
   jmx:
     enabled: false
   data:
@@ -117,6 +169,17 @@ spring:
     open-in-view: false
     properties:
       hibernate.jdbc.time_zone: UTC
+      hibernate.id.new_generator_mappings: true
+      hibernate.connection.provider_disables_autocommit: true
+      hibernate.cache.use_second_level_cache: true
+      hibernate.cache.use_query_cache: false
+      hibernate.generate_statistics: false
+      # modify batch size as necessary
+      hibernate.jdbc.batch_size: 25
+      hibernate.order_inserts: true
+      hibernate.order_updates: true
+      hibernate.query.fail_on_pagination_over_collection_fetch: true
+      hibernate.query.in_clause_parameter_padding: true
     hibernate:
       ddl-auto: none
       naming:
@@ -127,8 +190,8 @@ spring:
   main:
     allow-bean-definition-overriding: true
   mvc:
-    favicon:
-      enabled: false
+    pathmatch:
+      matching-strategy: ant_path_matcher
   task:
     execution:
       thread-name-prefix: alert-task-
@@ -150,17 +213,21 @@ spring:
       client:
         provider:
           oidc:
-            issuer-uri: http://localhost:9080/auth/realms/jhipster
+            issuer-uri: http://localhost:9080/realms/jhipster
         registration:
           oidc:
             client-id: internal
             client-secret: internal
+            scope: openid, profile, email, offline_access # last one for refresh tokens
 
 server:
   servlet:
     session:
       cookie:
         http-only: true
+
+springdoc:
+  show-actuator: true
 
 # Properties to be exposed on the /info management endpoint
 info:
@@ -178,40 +245,32 @@ jhipster:
     name: 'alertApp'
   # By default CORS is disabled. Uncomment to enable.
   # cors:
-  #     allowed-origins: "*"
-  #     allowed-methods: "*"
-  #     allowed-headers: "*"
-  #     exposed-headers: "Authorization,Link,X-Total-Count"
-  #     allow-credentials: true
-  #     max-age: 1800
+  #   allowed-origins: "http://localhost:8100,http://localhost:9000"
+  #   allowed-methods: "*"
+  #   allowed-headers: "*"
+  #   exposed-headers: "Authorization,Link,X-Total-Count,X-${jhipster.clientApp.name}-alert,X-${jhipster.clientApp.name}-error,X-${jhipster.clientApp.name}-params"
+  #   allow-credentials: true
+  #   max-age: 1800
   mail:
     from: alert@localhost
-  swagger:
-    default-include-pattern: /api/.*
-    title: alert API
-    description: alert API documentation
+  api-docs:
+    default-include-pattern: ${server.servlet.context-path:}/api/**
+    management-include-pattern: ${server.servlet.context-path:}/management/**
+    title: Alert API
+    description: Alert API documentation
     version: 0.0.1
     terms-of-service-url:
     contact-name:
     contact-url:
     contact-email:
-    license:
+    license: unlicensed
     license-url:
   security:
+    content-security-policy: "default-src 'self'; frame-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com data:"
     oauth2:
       audience:
         - account
         - api://default
-kafka:
-  bootstrap-servers: localhost:9092
-  consumer:
-    key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
-    value.deserializer: org.apache.kafka.common.serialization.StringDeserializer
-    group.id: alert
-    auto.offset.reset: earliest
-  producer:
-    key.serializer: org.apache.kafka.common.serialization.StringSerializer
-    value.serializer: org.apache.kafka.common.serialization.StringSerializer
 # ===================================================================
 # Application specific properties
 # Add your own application properties here, see the ApplicationProperties class

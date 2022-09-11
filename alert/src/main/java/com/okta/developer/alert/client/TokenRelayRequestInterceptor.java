@@ -1,10 +1,8 @@
 package com.okta.developer.alert.client;
 
 import com.okta.developer.alert.security.oauth2.AuthorizationHeaderUtil;
-
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
-
 import java.util.Optional;
 
 public class TokenRelayRequestInterceptor implements RequestInterceptor {

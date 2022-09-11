@@ -3,6 +3,7 @@
     "storeStore": {
       "home": {
         "title": "Stores",
+        "refreshListLabel": "Refresh list",
         "createLabel": "Create a new Store",
         "createOrEditLabel": "Create or edit a Store",
         "notFound": "No Stores found"
@@ -13,6 +14,7 @@
       "detail": {
         "title": "Store"
       },
+      "id": "ID",
       "name": "Name",
       "address": "Address",
       "status": "Status",

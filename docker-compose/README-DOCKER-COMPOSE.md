@@ -13,7 +13,7 @@ Launch all your infrastructure by running: `docker-compose up -d`.
 ### Applications and dependencies:
 
 - alert (microservice application)
-- alert's mysql database
+- alert's postgresql database
 - gateway (gateway application)
 - gateway's postgresql database
 - store (microservice application)

@@ -1,13 +1,12 @@
 package com.okta.developer.store.domain;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Field;
-import org.springframework.data.mongodb.core.mapping.Document;
-import javax.validation.constraints.*;
-
-import java.io.Serializable;
-import java.time.Instant;
 
 import com.okta.developer.store.domain.enumeration.StoreStatus;
+import java.io.Serializable;
+import java.time.Instant;
+import javax.validation.constraints.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 /**
  * A Store.
@@ -38,9 +37,15 @@ public class Store implements Serializable {
     @Field("update_timestamp")
     private Instant updateTimestamp;
 
-    // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
+    // jhipster-needle-entity-add-field - JHipster will add fields here
+
     public String getId() {
-        return id;
+        return this.id;
+    }
+
+    public Store id(String id) {
+        this.setId(id);
+        return this;
     }
 
     public void setId(String id) {
@@ -48,11 +53,11 @@ public class Store implements Serializable {
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public Store name(String name) {
-        this.name = name;
+        this.setName(name);
         return this;
     }
 
@@ -61,11 +66,11 @@ public class Store implements Serializable {
     }
 
     public String getAddress() {
-        return address;
+        return this.address;
     }
 
     public Store address(String address) {
-        this.address = address;
+        this.setAddress(address);
         return this;
     }
 
@@ -74,11 +79,11 @@ public class Store implements Serializable {
     }
 
     public StoreStatus getStatus() {
-        return status;
+        return this.status;
     }
 
     public Store status(StoreStatus status) {
-        this.status = status;
+        this.setStatus(status);
         return this;
     }
 
@@ -87,11 +92,11 @@ public class Store implements Serializable {
     }
 
     public Instant getCreateTimestamp() {
-        return createTimestamp;
+        return this.createTimestamp;
     }
 
     public Store createTimestamp(Instant createTimestamp) {
-        this.createTimestamp = createTimestamp;
+        this.setCreateTimestamp(createTimestamp);
         return this;
     }
 
@@ -100,18 +105,19 @@ public class Store implements Serializable {
     }
 
     public Instant getUpdateTimestamp() {
-        return updateTimestamp;
+        return this.updateTimestamp;
     }
 
     public Store updateTimestamp(Instant updateTimestamp) {
-        this.updateTimestamp = updateTimestamp;
+        this.setUpdateTimestamp(updateTimestamp);
         return this;
     }
 
     public void setUpdateTimestamp(Instant updateTimestamp) {
         this.updateTimestamp = updateTimestamp;
     }
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
+
+    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
     public boolean equals(Object o) {
@@ -126,9 +132,11 @@ public class Store implements Serializable {
 
     @Override
     public int hashCode() {
-        return 31;
+        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
+        return getClass().hashCode();
     }
 
+    // prettier-ignore
     @Override
     public String toString() {
         return "Store{" +

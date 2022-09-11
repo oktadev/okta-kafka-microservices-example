@@ -1,41 +1,34 @@
 {
-    "name": "StoreAlert",
-    "fields": [
-        {
-            "fieldName": "storeName",
-            "fieldType": "String",
-            "fieldValidateRules": [
-                "required"
-            ]
-        },
-        {
-            "fieldName": "storeStatus",
-            "fieldType": "String",
-            "fieldValidateRules": [
-                "required"
-            ]
-        },
-        {
-            "fieldName": "timestamp",
-            "fieldType": "Instant",
-            "fieldValidateRules": [
-                "required"
-            ]
-        }
-    ],
-    "relationships": [],
-    "changelogDate": "20200122015453",
-    "entityTableName": "store_alert",
-    "dto": "no",
-    "pagination": "no",
-    "service": "no",
-    "jpaMetamodelFiltering": false,
-    "fluentMethods": true,
-    "readOnly": false,
-    "clientRootFolder": "",
-    "applications": [
-        "gateway",
-        "alert"
-    ],
-    "microserviceName": "alert"
+  "applications": ["gateway", "alert"],
+  "changelogDate": "20220902151410",
+  "clientRootFolder": "alert",
+  "databaseType": "sql",
+  "dto": "no",
+  "embedded": false,
+  "entityTableName": "store_alert",
+  "fields": [
+    {
+      "fieldName": "storeName",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "storeStatus",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "timestamp",
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "microserviceName": "alert",
+  "name": "StoreAlert",
+  "pagination": "no",
+  "readOnly": false,
+  "relationships": [],
+  "service": "no"
 }

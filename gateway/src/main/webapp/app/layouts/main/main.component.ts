@@ -1,21 +1,27 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, RendererFactory2, Renderer2 } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { Router, ActivatedRouteSnapshot, NavigationEnd, NavigationError } from '@angular/router';
-import { TranslateService } from '@ngx-translate/core';
+import { Router, ActivatedRouteSnapshot, NavigationEnd } from '@angular/router';
+import { TranslateService, LangChangeEvent } from '@ngx-translate/core';
+import dayjs from 'dayjs/esm';
 
 import { AccountService } from 'app/core/auth/account.service';
 
 @Component({
   selector: 'jhi-main',
-  templateUrl: './main.component.html'
+  templateUrl: './main.component.html',
 })
 export class MainComponent implements OnInit {
+  private renderer: Renderer2;
+
   constructor(
     private accountService: AccountService,
-    private translateService: TranslateService,
     private titleService: Title,
-    private router: Router
-  ) {}
+    private router: Router,
+    private translateService: TranslateService,
+    rootRenderer: RendererFactory2
+  ) {
+    this.renderer = rootRenderer.createRenderer(document.querySelector('html'), null);
+  }
 
   ngOnInit(): void {
     // try to log in automatically
@@ -25,18 +31,19 @@ export class MainComponent implements OnInit {
       if (event instanceof NavigationEnd) {
         this.updateTitle();
       }
-      if (event instanceof NavigationError && event.error.status === 404) {
-        this.router.navigate(['/404']);
-      }
     });
 
-    this.translateService.onLangChange.subscribe(() => this.updateTitle());
+    this.translateService.onLangChange.subscribe((langChangeEvent: LangChangeEvent) => {
+      this.updateTitle();
+      dayjs.locale(langChangeEvent.lang);
+      this.renderer.setAttribute(document.querySelector('html'), 'lang', langChangeEvent.lang);
+    });
   }
 
   private getPageTitle(routeSnapshot: ActivatedRouteSnapshot): string {
-    let title: string = routeSnapshot.data && routeSnapshot.data['pageTitle'] ? routeSnapshot.data['pageTitle'] : '';
+    const title: string = routeSnapshot.data['pageTitle'] ?? '';
     if (routeSnapshot.firstChild) {
-      title = this.getPageTitle(routeSnapshot.firstChild) || title;
+      return this.getPageTitle(routeSnapshot.firstChild) || title;
     }
     return title;
   }
