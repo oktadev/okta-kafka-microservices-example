@@ -15,7 +15,7 @@ describe('Store e2e test', () => {
   const storePageUrlPattern = new RegExp('/store(\\?.*)?$');
   const username = Cypress.env('E2E_USERNAME') ?? 'user';
   const password = Cypress.env('E2E_PASSWORD') ?? 'user';
-  const storeSample = { name: 'Mountains wireless Market', address: 'overriding', createTimestamp: '2022-09-02T00:23:23.664Z' };
+  const storeSample = { name: 'Mountains wireless Market', address: 'overriding', createTimestamp: '2022-09-11T08:37:30.664Z' };
 
   let store;
 
@@ -163,9 +163,9 @@ describe('Store e2e test', () => {
 
       cy.get(`[data-cy="status"]`).select('OPEN');
 
-      cy.get(`[data-cy="createTimestamp"]`).type('2022-09-02T09:41').blur().should('have.value', '2022-09-02T09:41');
+      cy.get(`[data-cy="createTimestamp"]`).type('2022-09-11T17:55').blur().should('have.value', '2022-09-11T17:55');
 
-      cy.get(`[data-cy="updateTimestamp"]`).type('2022-09-01T20:30').blur().should('have.value', '2022-09-01T20:30');
+      cy.get(`[data-cy="updateTimestamp"]`).type('2022-09-11T04:44').blur().should('have.value', '2022-09-11T04:44');
 
       cy.get(entityCreateSaveButtonSelector).click();
 

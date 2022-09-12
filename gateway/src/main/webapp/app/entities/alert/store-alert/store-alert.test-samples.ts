@@ -6,27 +6,27 @@ export const sampleWithRequiredData: IStoreAlert = {
   id: 34729,
   storeName: 'solid Handcrafted Italy',
   storeStatus: 'Rustic',
-  timestamp: dayjs('2022-09-02T03:51'),
+  timestamp: dayjs('2022-09-11T12:05'),
 };
 
 export const sampleWithPartialData: IStoreAlert = {
   id: 55496,
   storeName: 'solution-oriented Salad',
   storeStatus: 'port',
-  timestamp: dayjs('2022-09-02T12:11'),
+  timestamp: dayjs('2022-09-11T20:25'),
 };
 
 export const sampleWithFullData: IStoreAlert = {
   id: 43550,
   storeName: 'Lilangeni',
   storeStatus: 'Money',
-  timestamp: dayjs('2022-09-02T06:31'),
+  timestamp: dayjs('2022-09-11T14:45'),
 };
 
 export const sampleWithNewData: NewStoreAlert = {
   storeName: 'Car',
   storeStatus: 'world-class Concrete',
-  timestamp: dayjs('2022-09-02T06:17'),
+  timestamp: dayjs('2022-09-11T14:31'),
   id: null,
 };
 

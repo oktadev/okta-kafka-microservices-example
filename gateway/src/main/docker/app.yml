@@ -14,13 +14,13 @@ services:
       - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_ISSUER_URI=http://keycloak:9080/realms/jhipster
       - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_ID=web_app
       - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_SECRET=web_app
-      - JHIPSTER_SLEEP=60 # gives time for microservices to boot before the gateway, the entire stack will be ready to accept incomming requests.
+      - JHIPSTER_SLEEP=80 # gives time for microservices, dependencies to boot before the gateway, the entire stack will be ready to accept incoming requests.
     # If you want to expose these ports outside your dev PC,
     # remove the "127.0.0.1:" prefix
     ports:
       - 127.0.0.1:8080:8080
   gateway-postgresql:
-    image: postgres:14.4
+    image: postgres:14.5
     # volumes:
     #   - ~/volumes/jhipster/gateway/postgresql/:/var/lib/postgresql/data/
     environment:
@@ -59,7 +59,7 @@ services:
     ports:
       - 127.0.0.1:8761:8761
   keycloak:
-    image: quay.io/keycloak/keycloak:18.0.0
+    image: quay.io/keycloak/keycloak:19.0.1
     command: ['start-dev --import-realm']
     volumes:
       - ./realm-config:/opt/keycloak/data/import

@@ -2,7 +2,7 @@
 version: '3.8'
 services:
   gateway-postgresql:
-    image: postgres:14.4
+    image: postgres:14.5
     # volumes:
     #   - ~/volumes/jhipster/gateway/postgresql/:/var/lib/postgresql/data/
     environment:

@@ -114,6 +114,5 @@ management:
   health:
     mail:
       enabled: false
-
 alert:
   distribution-list: list@email.com

@@ -41,7 +41,6 @@ public class StoreResource {
         this.alertService = alertService;
     }
 
-
     /**
      * {@code POST  /stores} : Create a new store.
      *

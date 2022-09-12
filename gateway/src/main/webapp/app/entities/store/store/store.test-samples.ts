@@ -8,15 +8,15 @@ export const sampleWithRequiredData: IStore = {
   id: 9662,
   name: 'web Books',
   address: 'port Islands JSON',
-  createTimestamp: dayjs('2022-09-02T03:05'),
+  createTimestamp: dayjs('2022-09-11T11:19'),
 };
 
 export const sampleWithPartialData: IStore = {
   id: 36967,
   name: 'Fantastic Keyboard supply-chains',
   address: 'Gorgeous',
-  createTimestamp: dayjs('2022-09-02T12:30'),
-  updateTimestamp: dayjs('2022-09-02T03:06'),
+  createTimestamp: dayjs('2022-09-11T20:44'),
+  updateTimestamp: dayjs('2022-09-11T11:20'),
 };
 
 export const sampleWithFullData: IStore = {
@@ -24,14 +24,14 @@ export const sampleWithFullData: IStore = {
   name: 'SMS Response Fresh',
   address: 'Assistant navigating',
   status: StoreStatus['CLOSED'],
-  createTimestamp: dayjs('2022-09-01T18:35'),
-  updateTimestamp: dayjs('2022-09-02T12:11'),
+  createTimestamp: dayjs('2022-09-11T02:49'),
+  updateTimestamp: dayjs('2022-09-11T20:25'),
 };
 
 export const sampleWithNewData: NewStore = {
   name: 'Avon',
   address: 'PCI firmware Sleek',
-  createTimestamp: dayjs('2022-09-02T05:44'),
+  createTimestamp: dayjs('2022-09-11T13:58'),
   id: null,
 };
 

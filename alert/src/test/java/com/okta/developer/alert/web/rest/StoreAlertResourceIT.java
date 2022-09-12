@@ -246,7 +246,7 @@ class StoreAlertResourceIT {
 
     @Test
     @Transactional
-    void putNewStoreAlert() throws Exception {
+    void putExistingStoreAlert() throws Exception {
         // Initialize the database
         storeAlertRepository.saveAndFlush(storeAlert);
 

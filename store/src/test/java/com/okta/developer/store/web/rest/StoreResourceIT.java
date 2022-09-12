@@ -231,7 +231,7 @@ class StoreResourceIT {
     }
 
     @Test
-    void putNewStore() throws Exception {
+    void putExistingStore() throws Exception {
         // Initialize the database
         storeRepository.save(store);
 
