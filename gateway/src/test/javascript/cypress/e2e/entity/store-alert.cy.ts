@@ -18,7 +18,7 @@ describe('StoreAlert e2e test', () => {
   const storeAlertSample = {
     storeName: 'SCSI Bedfordshire Markets',
     storeStatus: 'Right-sized Group Technician',
-    timestamp: '2022-09-01T17:59:28.423Z',
+    timestamp: '2022-09-11T02:13:35.423Z',
   };
 
   let storeAlert;
@@ -165,7 +165,7 @@ describe('StoreAlert e2e test', () => {
 
       cy.get(`[data-cy="storeStatus"]`).type('Borders array adapter').should('have.value', 'Borders array adapter');
 
-      cy.get(`[data-cy="timestamp"]`).type('2022-09-02T03:25').blur().should('have.value', '2022-09-02T03:25');
+      cy.get(`[data-cy="timestamp"]`).type('2022-09-11T11:39').blur().should('have.value', '2022-09-11T11:39');
 
       cy.get(entityCreateSaveButtonSelector).click();
 

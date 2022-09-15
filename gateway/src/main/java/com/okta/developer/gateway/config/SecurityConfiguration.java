@@ -2,16 +2,18 @@ package com.okta.developer.gateway.config;
 
 import static org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers.pathMatchers;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.okta.developer.gateway.security.AuthoritiesConstants;
 import com.okta.developer.gateway.security.SecurityUtils;
 import com.okta.developer.gateway.security.oauth2.AudienceValidator;
 import com.okta.developer.gateway.security.oauth2.JwtGrantedAuthorityConverter;
 import com.okta.developer.gateway.web.filter.SpaWebFilter;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -66,8 +68,14 @@ public class SecurityConfiguration {
 
     private final ReactiveClientRegistrationRepository clientRegistrationRepository;
 
-    // todo: optimize for scale https://github.com/jhipster/generator-jhipster/issues/18868
-    private final Map<String, Mono<Jwt>> users = new ConcurrentHashMap<>();
+    // See https://github.com/jhipster/generator-jhipster/issues/18868
+    // We don't use a distributed cache or the user selected cache implementation here on purpose
+    private final Cache<String, Mono<Jwt>> users = Caffeine
+        .newBuilder()
+        .maximumSize(10_000)
+        .expireAfterWrite(Duration.ofHours(1))
+        .recordStats()
+        .build();
 
     private final SecurityProblemSupport problemSupport;
     private final CorsWebFilter corsWebFilter;
@@ -104,7 +112,7 @@ public class SecurityConfiguration {
                 .authenticationEntryPoint(problemSupport)
         .and()
             .headers()
-            .contentSecurityPolicy(jHipsterProperties.getSecurity().getContentSecurityPolicy())
+                .contentSecurityPolicy(jHipsterProperties.getSecurity().getContentSecurityPolicy())
             .and()
                 .referrerPolicy(ReferrerPolicyServerHttpHeadersWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
             .and()
@@ -229,7 +237,7 @@ public class SecurityConfiguration {
                     return Mono.just(jwt);
                 }
                 // Retrieve user info from OAuth provider if not already loaded
-                return users.computeIfAbsent(
+                return users.get(
                     jwt.getSubject(),
                     s -> {
                         WebClient webClient = WebClient.create();

@@ -5,10 +5,12 @@
     "applications": {
       "alert": {
         "applicationIndex": 2,
+        "clientFramework": "no",
         "serverPort": "8082"
       },
       "store": {
         "applicationIndex": 1,
+        "clientFramework": "no",
         "serverPort": "8082"
       }
     },
@@ -21,7 +23,7 @@
     "clientPackageManager": "npm",
     "clientTheme": "none",
     "clientThemeVariant": "",
-    "creationTimestamp": 1662131530475,
+    "creationTimestamp": 1662938777192,
     "databaseType": "sql",
     "devDatabaseType": "h2Disk",
     "devServerPort": 4200,
@@ -34,10 +36,10 @@
     "entitySuffix": "",
     "gradleEnterpriseHost": "",
     "jhiPrefix": "jhi",
-    "jhipsterVersion": "7.9.2",
-    "jwtSecretKey": "ZDUwZWRhMGQzODNhMGYxZmI1MjczODQ0NWFiNDk2MDQ2OGRjZTE5OGY0MzgwNjJjOGI2MWIxOTQwMmY4ZjFiMjBkZDFiM2MyMjFlZGVjMTYxZTNkYzczNGQ3MGJlMWQzZTFhY2IxOWViOWE5M2IyZWIxMDUxYWM4NjAwMjQzNTI=",
+    "jhipsterVersion": "7.9.3",
+    "jwtSecretKey": "NjMxOWQyNDRkZTE1NzhjNDU5ZjQ3OTA0YTRhOTEwNGE4ODY4OTZjOWFmMmI2ZTg0ZDBlODY1NmZmMzY5MWU5MTBjOTNkMmM1NTg1MjBkNjZiYzNhY2EzZmYxNjQ4MTZmMzBkZDVmNDJhMWZhMDhjZDlhZTM4OTNhNDczMGQ0OTE=",
     "languages": ["en"],
-    "lastLiquibaseTimestamp": 1662131650000,
+    "lastLiquibaseTimestamp": 1662938897000,
     "messageBroker": false,
     "nativeLanguage": "en",
     "otherModules": [],
@@ -50,6 +52,7 @@
     "serverPort": "8080",
     "serviceDiscoveryType": "eureka",
     "skipCheckLengthOfIdentifier": false,
+    "skipClient": false,
     "skipFakeData": false,
     "skipUserManagement": true,
     "testFrameworks": ["cypress"],

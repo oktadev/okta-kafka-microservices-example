@@ -24,7 +24,7 @@ public class KafkaTestContainer implements InitializingBean, DisposableBean {
     public void afterPropertiesSet() {
         if (null == kafkaContainer) {
             kafkaContainer =
-                new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.1.1"))
+                new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.2.1"))
                     .withLogConsumer(new Slf4jLogConsumer(log))
                     .withReuse(true);
         }

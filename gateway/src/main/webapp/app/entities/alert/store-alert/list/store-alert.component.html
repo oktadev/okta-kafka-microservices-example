@@ -28,19 +28,33 @@
     <span jhiTranslate="gatewayApp.alertStoreAlert.home.notFound">No Store Alerts found</span>
   </div>
 
-  <div class="table-responsive" id="entities" *ngIf="storeAlerts && storeAlerts.length > 0">
+  <div class="table-responsive table-entities" id="entities" *ngIf="storeAlerts && storeAlerts.length > 0">
     <table class="table table-striped" aria-describedby="page-heading">
       <thead>
         <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
-          <th scope="col" jhiSortBy="id"><span jhiTranslate="global.field.id">ID</span> <fa-icon icon="sort"></fa-icon></th>
+          <th scope="col" jhiSortBy="id">
+            <div class="d-flex">
+              <span jhiTranslate="global.field.id">ID</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
           <th scope="col" jhiSortBy="storeName">
-            <span jhiTranslate="gatewayApp.alertStoreAlert.storeName">Store Name</span> <fa-icon icon="sort"></fa-icon>
+            <div class="d-flex">
+              <span jhiTranslate="gatewayApp.alertStoreAlert.storeName">Store Name</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
           </th>
           <th scope="col" jhiSortBy="storeStatus">
-            <span jhiTranslate="gatewayApp.alertStoreAlert.storeStatus">Store Status</span> <fa-icon icon="sort"></fa-icon>
+            <div class="d-flex">
+              <span jhiTranslate="gatewayApp.alertStoreAlert.storeStatus">Store Status</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
           </th>
           <th scope="col" jhiSortBy="timestamp">
-            <span jhiTranslate="gatewayApp.alertStoreAlert.timestamp">Timestamp</span> <fa-icon icon="sort"></fa-icon>
+            <div class="d-flex">
+              <span jhiTranslate="gatewayApp.alertStoreAlert.timestamp">Timestamp</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
           </th>
           <th scope="col"></th>
         </tr>

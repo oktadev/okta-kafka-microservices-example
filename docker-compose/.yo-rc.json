@@ -4,7 +4,7 @@
     "clusteredDbApps": [],
     "directoryPath": "../",
     "gatewayType": "SpringCloudGateway",
-    "jwtSecretKey": "YjQ4ZTNjZDA4MGVjNjA2NWM0MGVlNmVlYzBiNTUzOWIwOTExMmM0NWNiYzNhYWI3YjIwMzA3NzUyMTg0ZDdiMGYyMWQ1OWI5NzZhODcwZjNkMGI2ZGU3NjgxNTRhMmE3ZDkzMQ==",
+    "jwtSecretKey": "MzY2MWUwOTVhNjYwOWNiMTU3MWZhNTJlNzI1YWI0NGVjZTEyYzE3YzViOTY5Y2ZlNzg4OTg4NGNiZmZhMTk0NDk5ZDQwZjQ2MGNiNmYxNTBiYmNjZDM0MGU5MzIzMzllNjE3ZA==",
     "monitoring": "no",
     "serviceDiscoveryType": "eureka"
   }

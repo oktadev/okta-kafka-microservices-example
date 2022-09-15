@@ -17,7 +17,7 @@ logging:
   level:
     ROOT: INFO
     tech.jhipster: INFO
-    com.okta.developer.alert: INFO
+    com.okta.developer.alert: DEBUG
 
 eureka:
   instance:
@@ -33,15 +33,6 @@ management:
         enabled: false
 
 spring:
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username: { username }
-    protocol: smtp
-    tls: true
-    properties.mail.smtp:
-      auth: true
-      starttls.enable: true
   devtools:
     restart:
       enabled: false
@@ -72,6 +63,15 @@ spring:
   # Replace by 'prod, faker' to add the faker context and have sample data loaded in production
   liquibase:
     contexts: prod
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: { username }
+    protocol: smtp
+    tls: true
+    properties.mail.smtp:
+      auth: true
+      starttls.enable: true
   thymeleaf:
     cache: true
   sleuth:

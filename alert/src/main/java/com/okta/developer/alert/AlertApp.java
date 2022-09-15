@@ -1,6 +1,7 @@
 package com.okta.developer.alert;
 
 import com.okta.developer.alert.config.ApplicationProperties;
+import com.okta.developer.alert.config.CRLFLogConverter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
@@ -84,6 +85,7 @@ public class AlertApp {
             log.warn("The host name could not be determined, using `localhost` as fallback");
         }
         log.info(
+            CRLFLogConverter.CRLF_SAFE_MARKER,
             "\n----------------------------------------------------------\n\t" +
             "Application '{}' is running! Access URLs:\n\t" +
             "Local: \t\t{}://localhost:{}{}\n\t" +
@@ -105,6 +107,7 @@ public class AlertApp {
             configServerStatus = "Not found or not setup for this application";
         }
         log.info(
+            CRLFLogConverter.CRLF_SAFE_MARKER,
             "\n----------------------------------------------------------\n\t" +
             "Config Server: \t{}\n----------------------------------------------------------",
             configServerStatus

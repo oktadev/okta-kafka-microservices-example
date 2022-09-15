@@ -1,6 +1,6 @@
 {
   "applications": ["gateway", "alert"],
-  "changelogDate": "20220902151310",
+  "changelogDate": "20220911232717",
   "clientRootFolder": "alert",
   "databaseType": "sql",
   "dto": "no",

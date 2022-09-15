@@ -89,11 +89,13 @@ describe('Store Service', () => {
     });
 
     it('should delete a Store', () => {
+      const expected = true;
+
       service.delete(123).subscribe(resp => (expectedResult = resp.ok));
 
       const req = httpMock.expectOne({ method: 'DELETE' });
       req.flush({ status: 200 });
-      expect(expectedResult);
+      expect(expectedResult).toBe(expected);
     });
 
     describe('addStoreToCollectionIfMissing', () => {
