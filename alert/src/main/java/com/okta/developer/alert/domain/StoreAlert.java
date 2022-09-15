@@ -1,25 +1,26 @@
 package com.okta.developer.alert.domain;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
-import javax.persistence.*;
-import javax.validation.constraints.*;
 
 import java.io.Serializable;
 import java.time.Instant;
+import javax.persistence.*;
+import javax.validation.constraints.*;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 /**
  * A StoreAlert.
  */
 @Entity
 @Table(name = "store_alert")
-@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class StoreAlert implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
+    @SequenceGenerator(name = "sequenceGenerator")
+    @Column(name = "id")
     private Long id;
 
     @NotNull
@@ -34,9 +35,15 @@ public class StoreAlert implements Serializable {
     @Column(name = "timestamp", nullable = false)
     private Instant timestamp;
 
-    // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
+    // jhipster-needle-entity-add-field - JHipster will add fields here
+
     public Long getId() {
-        return id;
+        return this.id;
+    }
+
+    public StoreAlert id(Long id) {
+        this.setId(id);
+        return this;
     }
 
     public void setId(Long id) {
@@ -44,11 +51,11 @@ public class StoreAlert implements Serializable {
     }
 
     public String getStoreName() {
-        return storeName;
+        return this.storeName;
     }
 
     public StoreAlert storeName(String storeName) {
-        this.storeName = storeName;
+        this.setStoreName(storeName);
         return this;
     }
 
@@ -57,11 +64,11 @@ public class StoreAlert implements Serializable {
     }
 
     public String getStoreStatus() {
-        return storeStatus;
+        return this.storeStatus;
     }
 
     public StoreAlert storeStatus(String storeStatus) {
-        this.storeStatus = storeStatus;
+        this.setStoreStatus(storeStatus);
         return this;
     }
 
@@ -70,18 +77,19 @@ public class StoreAlert implements Serializable {
     }
 
     public Instant getTimestamp() {
-        return timestamp;
+        return this.timestamp;
     }
 
     public StoreAlert timestamp(Instant timestamp) {
-        this.timestamp = timestamp;
+        this.setTimestamp(timestamp);
         return this;
     }
 
     public void setTimestamp(Instant timestamp) {
         this.timestamp = timestamp;
     }
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
+
+    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
     public boolean equals(Object o) {
@@ -96,9 +104,11 @@ public class StoreAlert implements Serializable {
 
     @Override
     public int hashCode() {
-        return 31;
+        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
+        return getClass().hashCode();
     }
 
+    // prettier-ignore
     @Override
     public String toString() {
         return "StoreAlert{" +

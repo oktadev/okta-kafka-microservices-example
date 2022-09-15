@@ -1,9 +1,9 @@
 package com.okta.developer.alert.repository.timezone;
 
-import javax.persistence.*;
 import java.io.Serializable;
 import java.time.*;
 import java.util.Objects;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "jhi_date_time_wrapper")
@@ -12,7 +12,8 @@ public class DateTimeWrapper implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
+    @SequenceGenerator(name = "sequenceGenerator")
     private Long id;
 
     @Column(name = "instant")
@@ -118,6 +119,7 @@ public class DateTimeWrapper implements Serializable {
         return Objects.hashCode(getId());
     }
 
+    // prettier-ignore
     @Override
     public String toString() {
         return "TimeZoneTest{" +

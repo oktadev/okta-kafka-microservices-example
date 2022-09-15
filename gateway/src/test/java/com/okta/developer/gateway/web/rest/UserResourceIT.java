@@ -1,50 +1,41 @@
 package com.okta.developer.gateway.web.rest;
 
-import com.okta.developer.gateway.GatewayApp;
-import com.okta.developer.gateway.config.TestSecurityConfiguration;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf;
+
+import com.okta.developer.gateway.IntegrationTest;
+import com.okta.developer.gateway.config.Constants;
 import com.okta.developer.gateway.domain.Authority;
 import com.okta.developer.gateway.domain.User;
+import com.okta.developer.gateway.repository.AuthorityRepository;
+import com.okta.developer.gateway.repository.EntityManager;
 import com.okta.developer.gateway.repository.UserRepository;
 import com.okta.developer.gateway.security.AuthoritiesConstants;
-
-import com.okta.developer.gateway.service.UserService;
-import com.okta.developer.gateway.service.dto.UserDTO;
+import com.okta.developer.gateway.service.dto.AdminUserDTO;
 import com.okta.developer.gateway.service.mapper.UserMapper;
-import com.okta.developer.gateway.web.rest.errors.ExceptionTranslator;
+import java.time.Instant;
+import java.util.*;
+import java.util.function.Consumer;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cache.CacheManager;
-import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.persistence.EntityManager;
-import java.time.Instant;
-import java.util.*;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.hasItem;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.reactive.server.WebTestClient;
 
 /**
  * Integration tests for the {@link UserResource} REST controller.
  */
-@SpringBootTest(classes = {GatewayApp.class, TestSecurityConfiguration.class})
-public class UserResourceIT {
+@AutoConfigureWebTestClient(timeout = IntegrationTest.DEFAULT_TIMEOUT)
+@WithMockUser(authorities = AuthoritiesConstants.ADMIN)
+@IntegrationTest
+class UserResourceIT {
 
     private static final String DEFAULT_LOGIN = "johndoe";
 
     private static final String DEFAULT_ID = "id1";
-
-    private static final String DEFAULT_PASSWORD = "passjohndoe";
 
     private static final String DEFAULT_EMAIL = "johndoe@localhost";
 
@@ -60,41 +51,22 @@ public class UserResourceIT {
     private UserRepository userRepository;
 
     @Autowired
-    private UserService userService;
+    private AuthorityRepository authorityRepository;
 
     @Autowired
     private UserMapper userMapper;
 
     @Autowired
-    private MappingJackson2HttpMessageConverter jacksonMessageConverter;
-
-    @Autowired
-    private PageableHandlerMethodArgumentResolver pageableArgumentResolver;
-
-    @Autowired
-    private ExceptionTranslator exceptionTranslator;
-
-    @Autowired
     private EntityManager em;
 
     @Autowired
-    private CacheManager cacheManager;
-
-    private MockMvc restUserMockMvc;
+    private WebTestClient webTestClient;
 
     private User user;
 
     @BeforeEach
-    public void setup() {
-        cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).clear();
-        cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE).clear();
-        UserResource userResource = new UserResource(userService);
-
-        this.restUserMockMvc = MockMvcBuilders.standaloneSetup(userResource)
-            .setCustomArgumentResolvers(pageableArgumentResolver)
-            .setControllerAdvice(exceptionTranslator)
-            .setMessageConverters(jacksonMessageConverter)
-            .build();
+    public void setupCsrf() {
+        webTestClient = webTestClient.mutateWith(csrf());
     }
 
     /**
@@ -113,82 +85,44 @@ public class UserResourceIT {
         user.setLastName(DEFAULT_LASTNAME);
         user.setImageUrl(DEFAULT_IMAGEURL);
         user.setLangKey(DEFAULT_LANGKEY);
+        user.setCreatedBy(Constants.SYSTEM);
+        return user;
+    }
+
+    /**
+     * Delete all the users from the database.
+     */
+    public static void deleteEntities(EntityManager em) {
+        try {
+            em.deleteAll("jhi_user_authority").block();
+            em.deleteAll(User.class).block();
+        } catch (Exception e) {
+            // It can fail, if other entities are still referring this - it will be removed later.
+        }
+    }
+
+    /**
+     * Setups the database with one user.
+     */
+    public static User initTestUser(UserRepository userRepository, EntityManager em) {
+        userRepository.deleteAllUserAuthorities().block();
+        userRepository.deleteAll().block();
+        User user = createEntity(em);
+        user.setLogin(DEFAULT_LOGIN);
+        user.setEmail(DEFAULT_EMAIL);
         return user;
     }
 
     @BeforeEach
     public void initTest() {
-        user = createEntity(em);
-        user.setLogin(DEFAULT_LOGIN);
-        user.setEmail(DEFAULT_EMAIL);
+        user = initTestUser(userRepository, em);
     }
 
     @Test
-    @Transactional
-    public void getAllUsers() throws Exception {
-        // Initialize the database
-        userRepository.saveAndFlush(user);
-
-        // Get all the users
-        restUserMockMvc.perform(get("/api/users?sort=id,desc")
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-            .andExpect(jsonPath("$.[*].login").value(hasItem(DEFAULT_LOGIN)))
-            .andExpect(jsonPath("$.[*].firstName").value(hasItem(DEFAULT_FIRSTNAME)))
-            .andExpect(jsonPath("$.[*].lastName").value(hasItem(DEFAULT_LASTNAME)))
-            .andExpect(jsonPath("$.[*].email").value(hasItem(DEFAULT_EMAIL)))
-            .andExpect(jsonPath("$.[*].imageUrl").value(hasItem(DEFAULT_IMAGEURL)))
-            .andExpect(jsonPath("$.[*].langKey").value(hasItem(DEFAULT_LANGKEY)));
-    }
-
-    @Test
-    @Transactional
-    public void getUser() throws Exception {
-        // Initialize the database
-        userRepository.saveAndFlush(user);
-
-        assertThat(cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).get(user.getLogin())).isNull();
-
-        // Get the user
-        restUserMockMvc.perform(get("/api/users/{login}", user.getLogin()))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-            .andExpect(jsonPath("$.login").value(user.getLogin()))
-            .andExpect(jsonPath("$.firstName").value(DEFAULT_FIRSTNAME))
-            .andExpect(jsonPath("$.lastName").value(DEFAULT_LASTNAME))
-            .andExpect(jsonPath("$.email").value(DEFAULT_EMAIL))
-            .andExpect(jsonPath("$.imageUrl").value(DEFAULT_IMAGEURL))
-            .andExpect(jsonPath("$.langKey").value(DEFAULT_LANGKEY));
-
-        assertThat(cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).get(user.getLogin())).isNotNull();
-    }
-
-    @Test
-    @Transactional
-    public void getNonExistingUser() throws Exception {
-        restUserMockMvc.perform(get("/api/users/unknown"))
-            .andExpect(status().isNotFound());
-    }
-
-    @Test
-    @Transactional
-    public void getAllAuthorities() throws Exception {
-        restUserMockMvc.perform(get("/api/users/authorities")
-            .accept(TestUtil.APPLICATION_JSON_UTF8)
-            .contentType(TestUtil.APPLICATION_JSON_UTF8))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-            .andExpect(jsonPath("$").isArray())
-            .andExpect(jsonPath("$").value(hasItems(AuthoritiesConstants.USER, AuthoritiesConstants.ADMIN)));
-    }
-
-    @Test
-    @Transactional
-    public void testUserEquals() throws Exception {
+    void testUserEquals() throws Exception {
         TestUtil.equalsVerifier(User.class);
         User user1 = new User();
-        user1.setId("id1");
+        user1.setId(DEFAULT_ID);
         User user2 = new User();
         user2.setId(user1.getId());
         assertThat(user1).isEqualTo(user2);
@@ -199,8 +133,8 @@ public class UserResourceIT {
     }
 
     @Test
-    public void testUserDTOtoUser() {
-        UserDTO userDTO = new UserDTO();
+    void testUserDTOtoUser() {
+        AdminUserDTO userDTO = new AdminUserDTO();
         userDTO.setId(DEFAULT_ID);
         userDTO.setLogin(DEFAULT_LOGIN);
         userDTO.setFirstName(DEFAULT_FIRSTNAME);
@@ -219,7 +153,7 @@ public class UserResourceIT {
         assertThat(user.getFirstName()).isEqualTo(DEFAULT_FIRSTNAME);
         assertThat(user.getLastName()).isEqualTo(DEFAULT_LASTNAME);
         assertThat(user.getEmail()).isEqualTo(DEFAULT_EMAIL);
-        assertThat(user.getActivated()).isEqualTo(true);
+        assertThat(user.isActivated()).isTrue();
         assertThat(user.getImageUrl()).isEqualTo(DEFAULT_IMAGEURL);
         assertThat(user.getLangKey()).isEqualTo(DEFAULT_LANGKEY);
         assertThat(user.getCreatedBy()).isNull();
@@ -230,7 +164,7 @@ public class UserResourceIT {
     }
 
     @Test
-    public void testUserToUserDTO() {
+    void testUserToUserDTO() {
         user.setId(DEFAULT_ID);
         user.setCreatedBy(DEFAULT_LOGIN);
         user.setCreatedDate(Instant.now());
@@ -242,14 +176,14 @@ public class UserResourceIT {
         authorities.add(authority);
         user.setAuthorities(authorities);
 
-        UserDTO userDTO = userMapper.userToUserDTO(user);
+        AdminUserDTO userDTO = userMapper.userToAdminUserDTO(user);
 
         assertThat(userDTO.getId()).isEqualTo(DEFAULT_ID);
         assertThat(userDTO.getLogin()).isEqualTo(DEFAULT_LOGIN);
         assertThat(userDTO.getFirstName()).isEqualTo(DEFAULT_FIRSTNAME);
         assertThat(userDTO.getLastName()).isEqualTo(DEFAULT_LASTNAME);
         assertThat(userDTO.getEmail()).isEqualTo(DEFAULT_EMAIL);
-        assertThat(userDTO.isActivated()).isEqualTo(true);
+        assertThat(userDTO.isActivated()).isTrue();
         assertThat(userDTO.getImageUrl()).isEqualTo(DEFAULT_IMAGEURL);
         assertThat(userDTO.getLangKey()).isEqualTo(DEFAULT_LANGKEY);
         assertThat(userDTO.getCreatedBy()).isEqualTo(DEFAULT_LOGIN);
@@ -261,12 +195,10 @@ public class UserResourceIT {
     }
 
     @Test
-    public void testAuthorityEquals() {
+    void testAuthorityEquals() {
         Authority authorityA = new Authority();
-        assertThat(authorityA).isEqualTo(authorityA);
-        assertThat(authorityA).isNotEqualTo(null);
-        assertThat(authorityA).isNotEqualTo(new Object());
-        assertThat(authorityA.hashCode()).isEqualTo(0);
+        assertThat(authorityA).isNotEqualTo(null).isNotEqualTo(new Object());
+        assertThat(authorityA.hashCode()).isZero();
         assertThat(authorityA.toString()).isNotNull();
 
         Authority authorityB = new Authority();
@@ -279,7 +211,10 @@ public class UserResourceIT {
         assertThat(authorityA).isNotEqualTo(authorityB);
 
         authorityB.setName(AuthoritiesConstants.USER);
-        assertThat(authorityA).isEqualTo(authorityB);
-        assertThat(authorityA.hashCode()).isEqualTo(authorityB.hashCode());
+        assertThat(authorityA).isEqualTo(authorityB).hasSameHashCodeAs(authorityB);
+    }
+
+    private void assertPersistedUsers(Consumer<List<User>> userAssertion) {
+        userAssertion.accept(userRepository.findAll().collectList().block());
     }
 }

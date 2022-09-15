@@ -1,0 +1,40 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="storeAlert">
+      <h2 data-cy="storeAlertDetailsHeading"><span jhiTranslate="gatewayApp.alertStoreAlert.detail.title">Store Alert</span></h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ storeAlert.id }}</span>
+        </dd>
+        <dt><span jhiTranslate="gatewayApp.alertStoreAlert.storeName">Store Name</span></dt>
+        <dd>
+          <span>{{ storeAlert.storeName }}</span>
+        </dd>
+        <dt><span jhiTranslate="gatewayApp.alertStoreAlert.storeStatus">Store Status</span></dt>
+        <dd>
+          <span>{{ storeAlert.storeStatus }}</span>
+        </dd>
+        <dt><span jhiTranslate="gatewayApp.alertStoreAlert.timestamp">Timestamp</span></dt>
+        <dd>
+          <span>{{ storeAlert.timestamp | formatMediumDatetime }}</span>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Back</span>
+      </button>
+
+      <button type="button" [routerLink]="['/store-alert', storeAlert.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Edit</span>
+      </button>
+    </div>
+  </div>
+</div>

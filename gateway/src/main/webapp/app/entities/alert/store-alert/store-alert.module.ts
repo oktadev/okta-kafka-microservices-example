@@ -1,16 +1,13 @@
 import { NgModule } from '@angular/core';
-import { RouterModule } from '@angular/router';
-
-import { GatewaySharedModule } from 'app/shared/shared.module';
-import { StoreAlertComponent } from './store-alert.component';
-import { StoreAlertDetailComponent } from './store-alert-detail.component';
-import { StoreAlertUpdateComponent } from './store-alert-update.component';
-import { StoreAlertDeleteDialogComponent } from './store-alert-delete-dialog.component';
-import { storeAlertRoute } from './store-alert.route';
+import { SharedModule } from 'app/shared/shared.module';
+import { StoreAlertComponent } from './list/store-alert.component';
+import { StoreAlertDetailComponent } from './detail/store-alert-detail.component';
+import { StoreAlertUpdateComponent } from './update/store-alert-update.component';
+import { StoreAlertDeleteDialogComponent } from './delete/store-alert-delete-dialog.component';
+import { StoreAlertRoutingModule } from './route/store-alert-routing.module';
 
 @NgModule({
-  imports: [GatewaySharedModule, RouterModule.forChild(storeAlertRoute)],
+  imports: [SharedModule, StoreAlertRoutingModule],
   declarations: [StoreAlertComponent, StoreAlertDetailComponent, StoreAlertUpdateComponent, StoreAlertDeleteDialogComponent],
-  entryComponents: [StoreAlertDeleteDialogComponent]
 })
 export class AlertStoreAlertModule {}

@@ -1,17 +1,17 @@
 package com.okta.developer.gateway.web.rest;
 
+import com.okta.developer.gateway.security.SecurityUtils;
 import com.okta.developer.gateway.service.UserService;
-import com.okta.developer.gateway.service.dto.UserDTO;
-
+import com.okta.developer.gateway.service.dto.AdminUserDTO;
+import java.security.Principal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.servlet.http.HttpServletRequest;
-import java.security.Principal;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
 
 /**
  * REST controller for managing the current user's account.
@@ -21,6 +21,9 @@ import java.security.Principal;
 public class AccountResource {
 
     private static class AccountResourceException extends RuntimeException {
+
+        private static final long serialVersionUID = 1L;
+
         private AccountResourceException(String message) {
             super(message);
         }
@@ -35,18 +38,6 @@ public class AccountResource {
     }
 
     /**
-     * {@code GET  /authenticate} : check if the user is authenticated, and return its login.
-     *
-     * @param request the HTTP request.
-     * @return the login if the user is authenticated.
-     */
-    @GetMapping("/authenticate")
-    public String isAuthenticated(HttpServletRequest request) {
-        log.debug("REST request to check if the current user is authenticated");
-        return request.getRemoteUser();
-    }
-
-    /**
      * {@code GET  /account} : get the current user.
      *
      * @param principal the current user; resolves to {@code null} if not authenticated.
@@ -55,11 +46,23 @@ public class AccountResource {
      */
     @GetMapping("/account")
     @SuppressWarnings("unchecked")
-    public UserDTO getAccount(Principal principal) {
+    public Mono<AdminUserDTO> getAccount(Principal principal) {
         if (principal instanceof AbstractAuthenticationToken) {
             return userService.getUserFromAuthentication((AbstractAuthenticationToken) principal);
         } else {
             throw new AccountResourceException("User could not be found");
         }
+    }
+
+    /**
+     * {@code GET  /authenticate} : check if the user is authenticated, and return its login.
+     *
+     * @param request the HTTP request.
+     * @return the login if the user is authenticated.
+     */
+    @GetMapping("/authenticate")
+    public Mono<String> isAuthenticated(ServerWebExchange request) {
+        log.debug("REST request to check if the current user is authenticated");
+        return request.getPrincipal().map(Principal::getName);
     }
 }

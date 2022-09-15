@@ -4,22 +4,20 @@ import com.okta.developer.store.domain.Store;
 import com.okta.developer.store.repository.StoreRepository;
 import com.okta.developer.store.service.AlertService;
 import com.okta.developer.store.web.rest.errors.BadRequestAlertException;
-
-import io.github.jhipster.web.util.HeaderUtil;
-import io.github.jhipster.web.util.ResponseUtil;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import java.util.List;
-import java.util.Optional;
+import tech.jhipster.web.util.HeaderUtil;
+import tech.jhipster.web.util.ResponseUtil;
 
 /**
  * REST controller for managing {@link com.okta.developer.store.domain.Store}.
@@ -43,6 +41,7 @@ public class StoreResource {
         this.alertService = alertService;
     }
 
+
     /**
      * {@code POST  /stores} : Create a new store.
      *
@@ -57,40 +56,107 @@ public class StoreResource {
             throw new BadRequestAlertException("A new store cannot already have an ID", ENTITY_NAME, "idexists");
         }
         Store result = storeRepository.save(store);
-        return ResponseEntity.created(new URI("/api/stores/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+        return ResponseEntity
+            .created(new URI("/api/stores/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId()))
             .body(result);
     }
 
     /**
-     * {@code PUT  /stores} : Updates an existing store.
+     * {@code PUT  /stores/:id} : Updates an existing store.
      *
+     * @param id the id of the store to save.
      * @param store the store to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated store,
      * or with status {@code 400 (Bad Request)} if the store is not valid,
      * or with status {@code 500 (Internal Server Error)} if the store couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PutMapping("/stores")
-    public ResponseEntity<Store> updateStore(@Valid @RequestBody Store store) throws URISyntaxException {
-        log.debug("REST request to update Store : {}", store);
+    @PutMapping("/stores/{id}")
+    public ResponseEntity<Store> updateStore(
+        @PathVariable(value = "id", required = false) final String id,
+        @Valid @RequestBody Store store
+    ) throws URISyntaxException {
+        log.debug("REST request to update Store : {}, {}", id, store);
         if (store.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
+        if (!Objects.equals(id, store.getId())) {
+            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
+        }
+
+        if (!storeRepository.existsById(id)) {
+            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+        }
+
         Store result = storeRepository.save(store);
 
         log.debug("SEND store alert for Store: {}", store);
         alertService.alertStoreStatus(result);
 
-        return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, store.getId().toString()))
+        return ResponseEntity
+            .ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, store.getId()))
             .body(result);
+    }
+
+    /**
+     * {@code PATCH  /stores/:id} : Partial updates given fields of an existing store, field will ignore if it is null
+     *
+     * @param id the id of the store to save.
+     * @param store the store to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated store,
+     * or with status {@code 400 (Bad Request)} if the store is not valid,
+     * or with status {@code 404 (Not Found)} if the store is not found,
+     * or with status {@code 500 (Internal Server Error)} if the store couldn't be updated.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PatchMapping(value = "/stores/{id}", consumes = { "application/json", "application/merge-patch+json" })
+    public ResponseEntity<Store> partialUpdateStore(
+        @PathVariable(value = "id", required = false) final String id,
+        @NotNull @RequestBody Store store
+    ) throws URISyntaxException {
+        log.debug("REST request to partial update Store partially : {}, {}", id, store);
+        if (store.getId() == null) {
+            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
+        }
+        if (!Objects.equals(id, store.getId())) {
+            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
+        }
+
+        if (!storeRepository.existsById(id)) {
+            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+        }
+
+        Optional<Store> result = storeRepository
+            .findById(store.getId())
+            .map(existingStore -> {
+                if (store.getName() != null) {
+                    existingStore.setName(store.getName());
+                }
+                if (store.getAddress() != null) {
+                    existingStore.setAddress(store.getAddress());
+                }
+                if (store.getStatus() != null) {
+                    existingStore.setStatus(store.getStatus());
+                }
+                if (store.getCreateTimestamp() != null) {
+                    existingStore.setCreateTimestamp(store.getCreateTimestamp());
+                }
+                if (store.getUpdateTimestamp() != null) {
+                    existingStore.setUpdateTimestamp(store.getUpdateTimestamp());
+                }
+
+                return existingStore;
+            })
+            .map(storeRepository::save);
+
+        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, store.getId()));
     }
 
     /**
      * {@code GET  /stores} : get all the stores.
      *
-
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of stores in body.
      */
     @GetMapping("/stores")

@@ -6,7 +6,11 @@
 
     <logger name="com.okta.developer.store" level="INFO"/>
 
-    <logger name="io.github.jhipster" level="WARN"/>
+    <logger name="tech.jhipster" level="WARN"/>
+
+    <!-- https://www.testcontainers.org/supported_docker_environment/logging_config/ -->
+    <logger name="org.testcontainers" level="INFO"/>
+    <logger name="com.github.dockerjava" level="WARN"/>
 
     <logger name="javax.activation" level="WARN"/>
     <logger name="javax.mail" level="WARN"/>
@@ -15,11 +19,13 @@
     <logger name="com.netflix" level="WARN"/>
     <logger name="com.netflix.config.sources.URLConfigurationSource" level="ERROR"/>
     <logger name="com.netflix.discovery" level="INFO"/>
+    <logger name="com.jayway.jsonpath" level="WARN"/>
     <logger name="com.ryantenney" level="WARN"/>
     <logger name="com.sun" level="WARN"/>
     <logger name="com.zaxxer" level="WARN"/>
     <logger name="io.undertow" level="WARN"/>
     <logger name="io.undertow.websockets.jsr" level="ERROR"/>
+    <logger name="org.ehcache" level="WARN"/>
     <logger name="org.apache" level="WARN"/>
     <logger name="org.apache.catalina.startup.DigesterFactory" level="OFF"/>
     <logger name="org.bson" level="WARN"/>
@@ -34,12 +40,14 @@
     <logger name="org.xnio" level="WARN"/>
     <logger name="kafka" level="WARN"/>
     <logger name="org.I0Itec" level="WARN"/>
-    <logger name="springfox" level="WARN"/>
+    <logger name="io.swagger.v3" level="INFO"/>
     <logger name="sun.rmi" level="WARN"/>
     <logger name="sun.net.www" level="INFO"/>
     <logger name="sun.rmi.transport" level="WARN"/>
+    <logger name="com.tngtech.archunit.core.importer" level="ERROR"/>
 
-    <root level="WARN">
+    <root>
+        <level>WARN</level>
         <appender-ref ref="CONSOLE"/>
     </root>
 

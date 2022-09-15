@@ -1,7 +1,6 @@
 package com.okta.developer.gateway.web.rest.vm;
 
 import java.util.List;
-
 import org.springframework.cloud.client.ServiceInstance;
 
 /**

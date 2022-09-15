@@ -1,90 +1,80 @@
 package com.okta.developer.store.web.rest;
 
-import com.okta.developer.store.config.KafkaProperties;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
+import static org.springframework.web.servlet.mvc.method.annotation.SseEmitter.event;
+
+import com.okta.developer.store.config.KafkaSseConsumer;
+import com.okta.developer.store.config.KafkaSseProducer;
+import java.io.IOException;
+import java.security.Principal;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cloud.stream.annotation.StreamListener;
+import org.springframework.http.MediaType;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.support.GenericMessage;
+import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
-import java.time.Duration;
-import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @RestController
 @RequestMapping("/api/store-kafka")
 public class StoreKafkaResource {
 
     private final Logger log = LoggerFactory.getLogger(StoreKafkaResource.class);
+    private final MessageChannel output;
 
-    private final KafkaProperties kafkaProperties;
-    private KafkaProducer<String, String> producer;
-    private ExecutorService sseExecutorService = Executors.newCachedThreadPool();
+    // TODO implement state of the art emitter repository to become 12 factor
+    private Map<String, SseEmitter> emitters = new HashMap<>();
 
-    public StoreKafkaResource(KafkaProperties kafkaProperties) {
-        this.kafkaProperties = kafkaProperties;
-        this.producer = new KafkaProducer<>(kafkaProperties.getProducerProps());
+    public StoreKafkaResource(@Qualifier(KafkaSseProducer.CHANNELNAME) MessageChannel output) {
+        this.output = output;
     }
 
-    @PostMapping("/publish/{topic}")
-    public PublishResult publish(@PathVariable String topic, @RequestParam String message, @RequestParam(required = false) String key) throws ExecutionException, InterruptedException {
-        log.debug("REST request to send to Kafka topic {} with key {} the message : {}", topic, key, message);
-        RecordMetadata metadata = producer.send(new ProducerRecord<>(topic, key, message)).get();
-        return new PublishResult(metadata.topic(), metadata.partition(), metadata.offset(), Instant.ofEpochMilli(metadata.timestamp()));
+    @PostMapping("/publish")
+    public void publish(@RequestParam String message) {
+        log.debug("REST request the message : {} to send to Kafka topic ", message);
+        Map<String, Object> map = new HashMap<>();
+        map.put(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.TEXT_PLAIN_VALUE);
+        MessageHeaders headers = new MessageHeaders(map);
+        output.send(new GenericMessage<>(message, headers));
     }
 
-    @GetMapping("/consume")
-    public SseEmitter consume(@RequestParam("topic") List<String> topics, @RequestParam Map<String, String> consumerParams) {
-        log.debug("REST request to consume records from Kafka topics {}", topics);
-        Map<String, Object> consumerProps = kafkaProperties.getConsumerProps();
-        consumerProps.putAll(consumerParams);
-        consumerProps.remove("topic");
-
-        SseEmitter emitter = new SseEmitter(0L);
-        sseExecutorService.execute(() -> {
-            KafkaConsumer<String, String> consumer = new KafkaConsumer<>(consumerProps);
-            emitter.onCompletion(consumer::close);
-            consumer.subscribe(topics);
-            boolean exitLoop = false;
-            while(!exitLoop) {
-                try {
-                    ConsumerRecords<String, String> records = consumer.poll(Duration.ofSeconds(5));
-                    for (ConsumerRecord<String, String> record : records) {
-                        emitter.send(record.value());
-                    }
-                    emitter.send(SseEmitter.event().comment(""));
-                } catch (Exception ex) {
-                    log.trace("Complete with error {}", ex.getMessage(), ex);
-                    emitter.completeWithError(ex);
-                    exitLoop = true;
-                }
-            }
-            consumer.close();
-            emitter.complete();
-        });
+    @GetMapping("/register")
+    public ResponseBodyEmitter register(Principal principal) {
+        log.debug("Registering sse client for {}", principal.getName());
+        SseEmitter emitter = new SseEmitter();
+        emitter.onCompletion(() -> emitters.remove(emitter));
+        emitters.put(principal.getName(), emitter);
         return emitter;
     }
 
-    private static class PublishResult {
-        public final String topic;
-        public final int partition;
-        public final long offset;
-        public final Instant timestamp;
+    @GetMapping("/unregister")
+    public void unregister(Principal principal) {
+        String user = principal.getName();
+        log.debug("Unregistering sse emitter for user: {}", user);
+        Optional.ofNullable(emitters.get(user)).ifPresent(ResponseBodyEmitter::complete);
+    }
 
-        private PublishResult(String topic, int partition, long offset, Instant timestamp) {
-            this.topic = topic;
-            this.partition = partition;
-            this.offset = offset;
-            this.timestamp = timestamp;
-        }
+    @StreamListener(value = KafkaSseConsumer.CHANNELNAME, copyHeaders = "false")
+    public void consume(Message<String> message) {
+        log.debug("Got message from kafka stream: {}", message.getPayload());
+        emitters
+            .entrySet()
+            .stream()
+            .map(Map.Entry::getValue)
+            .forEach((SseEmitter emitter) -> {
+                try {
+                    emitter.send(event().data(message.getPayload(), MediaType.TEXT_PLAIN));
+                } catch (IOException e) {
+                    log.debug("error sending sse message, {}", message.getPayload());
+                }
+            });
     }
 }

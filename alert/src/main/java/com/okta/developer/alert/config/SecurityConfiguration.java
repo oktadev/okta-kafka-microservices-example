@@ -1,51 +1,49 @@
 package com.okta.developer.alert.config;
 
 import com.okta.developer.alert.security.*;
-
-import io.github.jhipster.config.JHipsterProperties;
+import com.okta.developer.alert.security.SecurityUtils;
+import com.okta.developer.alert.security.oauth2.AudienceValidator;
+import com.okta.developer.alert.security.oauth2.JwtGrantedAuthorityConverter;
+import java.util.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import com.okta.developer.alert.security.oauth2.AudienceValidator;
-import com.okta.developer.alert.security.SecurityUtils;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.jwt.*;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.GrantedAuthority;
-import java.util.*;
-import com.okta.developer.alert.security.oauth2.JwtAuthorityExtractor;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.zalando.problem.spring.web.advice.security.SecurityProblemSupport;
+import tech.jhipster.config.JHipsterProperties;
 
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
 @Import(SecurityProblemSupport.class)
-public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
+public class SecurityConfiguration {
+
+    private final JHipsterProperties jHipsterProperties;
 
     @Value("${spring.security.oauth2.client.provider.oidc.issuer-uri}")
     private String issuerUri;
 
-    private final JHipsterProperties jHipsterProperties;
-    private final JwtAuthorityExtractor jwtAuthorityExtractor;
     private final SecurityProblemSupport problemSupport;
 
-    public SecurityConfiguration(JwtAuthorityExtractor jwtAuthorityExtractor, JHipsterProperties jHipsterProperties, SecurityProblemSupport problemSupport) {
+    public SecurityConfiguration(JHipsterProperties jHipsterProperties, SecurityProblemSupport problemSupport) {
         this.problemSupport = problemSupport;
-        this.jwtAuthorityExtractor = jwtAuthorityExtractor;
         this.jHipsterProperties = jHipsterProperties;
     }
-    @Override
-    public void configure(WebSecurity web) {
-        web.ignoring()
-            .antMatchers("/h2-console/**");
-    }
 
-    @Override
-    public void configure(HttpSecurity http) throws Exception {
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // @formatter:off
         http
             .csrf()
@@ -55,40 +53,49 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .accessDeniedHandler(problemSupport)
         .and()
             .headers()
-            .contentSecurityPolicy("default-src 'self'; frame-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:")
+            .contentSecurityPolicy(jHipsterProperties.getSecurity().getContentSecurityPolicy())
         .and()
             .referrerPolicy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
         .and()
-            .featurePolicy("geolocation 'none'; midi 'none'; sync-xhr 'none'; microphone 'none'; camera 'none'; magnetometer 'none'; gyroscope 'none'; speaker 'none'; fullscreen 'self'; payment 'none'")
+            .permissionsPolicy().policy("camera=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), sync-xhr=()")
         .and()
             .frameOptions()
-            .deny()
+            .sameOrigin()
         .and()
             .sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         .and()
             .authorizeRequests()
+            .antMatchers("/h2-console/**").permitAll()
+            .antMatchers("/api/authenticate").permitAll()
             .antMatchers("/api/auth-info").permitAll()
+            .antMatchers("/api/admin/**").hasAuthority(AuthoritiesConstants.ADMIN)
             .antMatchers("/api/**").authenticated()
             .antMatchers("/management/health").permitAll()
+            .antMatchers("/management/health/**").permitAll()
             .antMatchers("/management/info").permitAll()
             .antMatchers("/management/prometheus").permitAll()
             .antMatchers("/management/**").hasAuthority(AuthoritiesConstants.ADMIN)
         .and()
             .oauth2ResourceServer()
                 .jwt()
-                .jwtAuthenticationConverter(jwtAuthorityExtractor)
+                .jwtAuthenticationConverter(authenticationConverter())
                 .and()
             .and()
                 .oauth2Client();
+        return http.build();
         // @formatter:on
     }
 
+    Converter<Jwt, AbstractAuthenticationToken> authenticationConverter() {
+        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new JwtGrantedAuthorityConverter());
+        return jwtAuthenticationConverter;
+    }
 
     @Bean
     JwtDecoder jwtDecoder() {
-        NimbusJwtDecoderJwkSupport jwtDecoder = (NimbusJwtDecoderJwkSupport)
-            JwtDecoders.fromOidcIssuerLocation(issuerUri);
+        NimbusJwtDecoder jwtDecoder = JwtDecoders.fromOidcIssuerLocation(issuerUri);
 
         OAuth2TokenValidator<Jwt> audienceValidator = new AudienceValidator(jHipsterProperties.getSecurity().getOauth2().getAudience());
         OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuerUri);

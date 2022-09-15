@@ -1,7 +1,6 @@
 package com.okta.developer.store.security.oauth2;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.io.Serializable;
 import java.util.UUID;
 
@@ -41,7 +40,9 @@ public class OAuthIdpTokenResponseDTO implements Serializable {
     @JsonProperty("refresh_expires_in")
     private String refreshExpiresIn;
 
-    public OAuthIdpTokenResponseDTO() {}
+    public OAuthIdpTokenResponseDTO() {
+        // Empty constructor for serialization.
+    }
 
     public String getRefreshExpiresIn() {
         return refreshExpiresIn;

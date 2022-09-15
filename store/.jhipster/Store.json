@@ -1,50 +1,43 @@
 {
-    "name": "Store",
-    "fields": [
-        {
-            "fieldName": "name",
-            "fieldType": "String",
-            "fieldValidateRules": [
-                "required"
-            ]
-        },
-        {
-            "fieldName": "address",
-            "fieldType": "String",
-            "fieldValidateRules": [
-                "required"
-            ]
-        },
-        {
-            "fieldName": "status",
-            "fieldType": "StoreStatus",
-            "fieldValues": "OPEN,CLOSED"
-        },
-        {
-            "fieldName": "createTimestamp",
-            "fieldType": "Instant",
-            "fieldValidateRules": [
-                "required"
-            ]
-        },
-        {
-            "fieldName": "updateTimestamp",
-            "fieldType": "Instant"
-        }
-    ],
-    "relationships": [],
-    "changelogDate": "20200122015452",
-    "entityTableName": "store",
-    "dto": "no",
-    "pagination": "no",
-    "service": "no",
-    "jpaMetamodelFiltering": false,
-    "fluentMethods": true,
-    "readOnly": false,
-    "clientRootFolder": "",
-    "applications": [
-        "gateway",
-        "store"
-    ],
-    "microserviceName": "store"
+  "applications": ["gateway", "store"],
+  "changelogDate": "20220902151310",
+  "clientRootFolder": "store",
+  "databaseType": "mongodb",
+  "dto": "no",
+  "embedded": false,
+  "entityTableName": "store",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "address",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "StoreStatus",
+      "fieldValues": "OPEN,CLOSED"
+    },
+    {
+      "fieldName": "createTimestamp",
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "updateTimestamp",
+      "fieldType": "Instant"
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "microserviceName": "store",
+  "name": "Store",
+  "pagination": "no",
+  "readOnly": false,
+  "relationships": [],
+  "service": "no"
 }

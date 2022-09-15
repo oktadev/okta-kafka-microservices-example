@@ -1,16 +1,13 @@
 import { NgModule } from '@angular/core';
-import { RouterModule } from '@angular/router';
-
-import { GatewaySharedModule } from 'app/shared/shared.module';
-import { StoreComponent } from './store.component';
-import { StoreDetailComponent } from './store-detail.component';
-import { StoreUpdateComponent } from './store-update.component';
-import { StoreDeleteDialogComponent } from './store-delete-dialog.component';
-import { storeRoute } from './store.route';
+import { SharedModule } from 'app/shared/shared.module';
+import { StoreComponent } from './list/store.component';
+import { StoreDetailComponent } from './detail/store-detail.component';
+import { StoreUpdateComponent } from './update/store-update.component';
+import { StoreDeleteDialogComponent } from './delete/store-delete-dialog.component';
+import { StoreRoutingModule } from './route/store-routing.module';
 
 @NgModule({
-  imports: [GatewaySharedModule, RouterModule.forChild(storeRoute)],
+  imports: [SharedModule, StoreRoutingModule],
   declarations: [StoreComponent, StoreDetailComponent, StoreUpdateComponent, StoreDeleteDialogComponent],
-  entryComponents: [StoreDeleteDialogComponent]
 })
 export class StoreStoreModule {}

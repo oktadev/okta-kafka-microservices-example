@@ -5,7 +5,7 @@ import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'jhi-error',
-  templateUrl: './error.component.html'
+  templateUrl: './error.component.html',
 })
 export class ErrorComponent implements OnInit, OnDestroy {
   errorMessage?: string;
@@ -33,7 +33,9 @@ export class ErrorComponent implements OnInit, OnDestroy {
   private getErrorMessageTranslation(): void {
     this.errorMessage = '';
     if (this.errorKey) {
-      this.translateService.get(this.errorKey).subscribe(translatedErrorMessage => (this.errorMessage = translatedErrorMessage));
+      this.translateService.get(this.errorKey).subscribe(translatedErrorMessage => {
+        this.errorMessage = translatedErrorMessage;
+      });
     }
   }
 }

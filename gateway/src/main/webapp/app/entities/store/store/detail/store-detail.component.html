@@ -1,0 +1,48 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="store">
+      <h2 data-cy="storeDetailsHeading"><span jhiTranslate="gatewayApp.storeStore.detail.title">Store</span></h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ store.id }}</span>
+        </dd>
+        <dt><span jhiTranslate="gatewayApp.storeStore.name">Name</span></dt>
+        <dd>
+          <span>{{ store.name }}</span>
+        </dd>
+        <dt><span jhiTranslate="gatewayApp.storeStore.address">Address</span></dt>
+        <dd>
+          <span>{{ store.address }}</span>
+        </dd>
+        <dt><span jhiTranslate="gatewayApp.storeStore.status">Status</span></dt>
+        <dd>
+          <span jhiTranslate="{{ 'gatewayApp.StoreStatus.' + store.status }}">{{ store.status }}</span>
+        </dd>
+        <dt><span jhiTranslate="gatewayApp.storeStore.createTimestamp">Create Timestamp</span></dt>
+        <dd>
+          <span>{{ store.createTimestamp | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gatewayApp.storeStore.updateTimestamp">Update Timestamp</span></dt>
+        <dd>
+          <span>{{ store.updateTimestamp | formatMediumDatetime }}</span>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Back</span>
+      </button>
+
+      <button type="button" [routerLink]="['/store', store.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Edit</span>
+      </button>
+    </div>
+  </div>
+</div>

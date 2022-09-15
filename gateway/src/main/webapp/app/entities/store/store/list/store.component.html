@@ -1,0 +1,84 @@
+<div>
+  <h2 id="page-heading" data-cy="StoreHeading">
+    <span jhiTranslate="gatewayApp.storeStore.home.title">Stores</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading">
+        <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
+        <span jhiTranslate="gatewayApp.storeStore.home.refreshListLabel">Refresh list</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-store"
+        [routerLink]="['/store/new']"
+      >
+        <fa-icon icon="plus"></fa-icon>
+        <span jhiTranslate="gatewayApp.storeStore.home.createLabel"> Create a new Store </span>
+      </button>
+    </div>
+  </h2>
+
+  <jhi-alert-error></jhi-alert-error>
+
+  <jhi-alert></jhi-alert>
+
+  <div class="alert alert-warning" id="no-result" *ngIf="stores?.length === 0">
+    <span jhiTranslate="gatewayApp.storeStore.home.notFound">No Stores found</span>
+  </div>
+
+  <div class="table-responsive" id="entities" *ngIf="stores && stores.length > 0">
+    <table class="table table-striped" aria-describedby="page-heading">
+      <thead>
+        <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
+          <th scope="col" jhiSortBy="id"><span jhiTranslate="global.field.id">ID</span> <fa-icon icon="sort"></fa-icon></th>
+          <th scope="col" jhiSortBy="name"><span jhiTranslate="gatewayApp.storeStore.name">Name</span> <fa-icon icon="sort"></fa-icon></th>
+          <th scope="col" jhiSortBy="address">
+            <span jhiTranslate="gatewayApp.storeStore.address">Address</span> <fa-icon icon="sort"></fa-icon>
+          </th>
+          <th scope="col" jhiSortBy="status">
+            <span jhiTranslate="gatewayApp.storeStore.status">Status</span> <fa-icon icon="sort"></fa-icon>
+          </th>
+          <th scope="col" jhiSortBy="createTimestamp">
+            <span jhiTranslate="gatewayApp.storeStore.createTimestamp">Create Timestamp</span> <fa-icon icon="sort"></fa-icon>
+          </th>
+          <th scope="col" jhiSortBy="updateTimestamp">
+            <span jhiTranslate="gatewayApp.storeStore.updateTimestamp">Update Timestamp</span> <fa-icon icon="sort"></fa-icon>
+          </th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let store of stores; trackBy: trackId" data-cy="entityTable">
+          <td>
+            <a [routerLink]="['/store', store.id, 'view']">{{ store.id }}</a>
+          </td>
+          <td>{{ store.name }}</td>
+          <td>{{ store.address }}</td>
+          <td jhiTranslate="{{ 'gatewayApp.StoreStatus.' + store.status }}">{{ store.status }}</td>
+          <td>{{ store.createTimestamp | formatMediumDatetime }}</td>
+          <td>{{ store.updateTimestamp | formatMediumDatetime }}</td>
+          <td class="text-end">
+            <div class="btn-group">
+              <button type="submit" [routerLink]="['/store', store.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                <fa-icon icon="eye"></fa-icon>
+                <span class="d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
+              </button>
+
+              <button type="submit" [routerLink]="['/store', store.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                <fa-icon icon="pencil-alt"></fa-icon>
+                <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
+              </button>
+
+              <button type="submit" (click)="delete(store)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                <fa-icon icon="times"></fa-icon>
+                <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

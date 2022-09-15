@@ -1,13 +1,14 @@
 package com.okta.developer.alert.domain;
 
-import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
-import com.okta.developer.alert.web.rest.TestUtil;
 
-public class StoreAlertTest {
+import com.okta.developer.alert.web.rest.TestUtil;
+import org.junit.jupiter.api.Test;
+
+class StoreAlertTest {
 
     @Test
-    public void equalsVerifier() throws Exception {
+    void equalsVerifier() throws Exception {
         TestUtil.equalsVerifier(StoreAlert.class);
         StoreAlert storeAlert1 = new StoreAlert();
         storeAlert1.setId(1L);

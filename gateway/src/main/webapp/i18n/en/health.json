@@ -15,9 +15,14 @@
       "refreshScope": "Microservice Refresh Scope",
       "clientConfigServer": "Microservice Config Server",
       "hystrix": "Hystrix",
+
+      "reactiveDiscoveryClients": "Microservice Discovery Clients",
       "diskSpace": "Disk space",
       "mail": "Email",
-      "db": "Database"
+      "livenessState": "Liveness state",
+      "readinessState": "Readiness state",
+      "ping": "Application",
+      "r2dbc": "Database"
     },
     "table": {
       "service": "Service name",
@@ -26,6 +31,7 @@
     "status": {
       "UNKNOWN": "UNKNOWN",
       "UP": "UP",
+      "OUT_OF_SERVICE": "OUT_OF_SERVICE",
       "DOWN": "DOWN"
     }
   }

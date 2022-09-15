@@ -1,59 +1,43 @@
 package com.okta.developer.store.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.okta.developer.store.config.KafkaProperties;
+import com.okta.developer.store.config.KafkaStoreAlertProducer;
 import com.okta.developer.store.domain.Store;
 import com.okta.developer.store.service.dto.StoreAlertDTO;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.support.GenericMessage;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MimeTypeUtils;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class AlertService {
 
     private final Logger log = LoggerFactory.getLogger(AlertService.class);
 
-    private static final String TOPIC = "topic_alert";
+    private final MessageChannel output;
 
-    private final KafkaProperties kafkaProperties;
-
-    private final static Logger logger = LoggerFactory.getLogger(AlertService.class);
-    private KafkaProducer<String, String> producer;
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
-    public AlertService(KafkaProperties kafkaProperties) {
-        this.kafkaProperties = kafkaProperties;
-    }
-
-    @PostConstruct
-    public void initialize(){
-        log.info("Kafka producer initializing...");
-        this.producer = new KafkaProducer<>(kafkaProperties.getProducerProps());
-        Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
-        log.info("Kafka producer initialized");
+    public AlertService(@Qualifier(KafkaStoreAlertProducer.CHANNELNAME) MessageChannel output) {
+        this.output = output;
     }
 
     public void alertStoreStatus(Store store) {
         try {
             StoreAlertDTO storeAlertDTO = new StoreAlertDTO(store);
-            String message = objectMapper.writeValueAsString(storeAlertDTO);
-            ProducerRecord<String, String> record = new ProducerRecord<>(TOPIC, message);
-            producer.send(record);
-        } catch (JsonProcessingException e) {
-            logger.error("Could not send store alert", e);
+            log.debug("Request the message : {} to send to store-alert topic ", storeAlertDTO);
+
+            Map<String, Object> map = new HashMap<>();
+            map.put(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON);
+            MessageHeaders headers = new MessageHeaders(map);
+            output.send(new GenericMessage<>(storeAlertDTO, headers));
+        } catch (Exception e){
+            log.error("Could not send store alert", e);
             throw new AlertServiceException(e);
         }
-    }
-
-    @PreDestroy
-    public void shutdown() {
-        log.info("Shutdown Kafka producer");
-        producer.close();
     }
 }

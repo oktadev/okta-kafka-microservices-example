@@ -1,114 +1,105 @@
 package com.okta.developer.gateway.web.rest;
 
-import com.okta.developer.gateway.GatewayApp;
-import com.okta.developer.gateway.config.TestSecurityConfiguration;
+import static com.okta.developer.gateway.test.util.OAuth2TestUtil.TEST_USER_LOGIN;
+import static com.okta.developer.gateway.test.util.OAuth2TestUtil.authenticationToken;
+import static com.okta.developer.gateway.test.util.OAuth2TestUtil.registerAuthenticationToken;
+import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.*;
+
+import com.okta.developer.gateway.IntegrationTest;
 import com.okta.developer.gateway.security.AuthoritiesConstants;
-import com.okta.developer.gateway.service.UserService;
-import com.okta.developer.gateway.web.rest.errors.ExceptionTranslator;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
-import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.security.test.context.TestSecurityContextHolder;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.WebApplicationContext;
-
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
+import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.reactive.server.WebTestClient;
 
 /**
  * Integration tests for the {@link AccountResource} REST controller.
  */
-@SpringBootTest(classes = {GatewayApp.class, TestSecurityConfiguration.class})
-public class AccountResourceIT {
+@AutoConfigureWebTestClient(timeout = IntegrationTest.DEFAULT_TIMEOUT)
+@WithMockUser(value = TEST_USER_LOGIN)
+@IntegrationTest
+class AccountResourceIT {
+
+    private Map<String, Object> claims;
 
     @Autowired
-    private ExceptionTranslator exceptionTranslator;
+    private WebTestClient webTestClient;
 
     @Autowired
-    private UserService userService;
-
-    private MockMvc restUserMockMvc;
+    private ReactiveOAuth2AuthorizedClientService authorizedClientService;
 
     @Autowired
-    private WebApplicationContext context;
+    private ClientRegistration clientRegistration;
 
     @BeforeEach
     public void setup() {
-        MockitoAnnotations.initMocks(this);
-        AccountResource accountUserMockResource = new AccountResource(userService);
-
-        this.restUserMockMvc = MockMvcBuilders.standaloneSetup(accountUserMockResource)
-            .setControllerAdvice(exceptionTranslator)
-            .build();
+        claims = new HashMap<>();
+        claims.put("groups", Collections.singletonList(AuthoritiesConstants.ADMIN));
+        claims.put("sub", "jane");
+        claims.put("email", "jane.doe@jhipster.com");
     }
 
     @Test
-    public void testNonAuthenticatedUser() throws Exception {
-        restUserMockMvc.perform(get("/api/authenticate")
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(content().string(""));
+    void testGetExistingAccount() {
+        webTestClient
+            .mutateWith(
+                mockAuthentication(registerAuthenticationToken(authorizedClientService, clientRegistration, authenticationToken(claims)))
+            )
+            .mutateWith(csrf())
+            .get()
+            .uri("/api/account")
+            .accept(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus()
+            .isOk()
+            .expectHeader()
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .expectBody()
+            .jsonPath("$.login")
+            .isEqualTo("jane")
+            .jsonPath("$.email")
+            .isEqualTo("jane.doe@jhipster.com")
+            .jsonPath("$.authorities")
+            .isEqualTo(AuthoritiesConstants.ADMIN);
     }
 
     @Test
-    public void testAuthenticatedUser() throws Exception {
-        restUserMockMvc.perform(get("/api/authenticate")
-            .with(request -> {
-                request.setRemoteUser("test");
-                return request;
-            })
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(content().string("test"));
+    void testGetUnknownAccount() {
+        webTestClient.get().uri("/api/account").accept(MediaType.APPLICATION_JSON).exchange().expectStatus().is5xxServerError();
     }
 
     @Test
-    @Transactional
-    public void testGetExistingAccount() throws Exception {
-        // create security-aware mockMvc
-        restUserMockMvc = MockMvcBuilders
-            .webAppContextSetup(context)
-            .apply(springSecurity())
-            .build();
-
-        Map<String, Object> userDetails = new HashMap<>();
-        userDetails.put("sub", "test");
-        userDetails.put("email", "john.doe@jhipster.com");
-        Collection<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(AuthoritiesConstants.ADMIN));
-        OAuth2User user = new DefaultOAuth2User(authorities, userDetails, "sub");
-        OAuth2AuthenticationToken authentication = new OAuth2AuthenticationToken(user, authorities, "oidc");
-        TestSecurityContextHolder.getContext().setAuthentication(authentication);
-
-        restUserMockMvc.perform(get("/api/account")
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-            .andExpect(jsonPath("$.login").value("test"))
-            .andExpect(jsonPath("$.email").value("john.doe@jhipster.com"))
-            .andExpect(jsonPath("$.authorities").value(AuthoritiesConstants.ADMIN));
+    @WithUnauthenticatedMockUser
+    void testNonAuthenticatedUser() {
+        webTestClient
+            .get()
+            .uri("/api/authenticate")
+            .accept(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus()
+            .isOk()
+            .expectBody()
+            .isEmpty();
     }
 
     @Test
-    public void testGetUnknownAccount() throws Exception {
-        restUserMockMvc.perform(get("/api/account")
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isInternalServerError());
+    void testAuthenticatedUser() {
+        webTestClient
+            .get()
+            .uri("/api/authenticate")
+            .accept(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus()
+            .isOk()
+            .expectBody(String.class)
+            .isEqualTo(TEST_USER_LOGIN);
     }
 }

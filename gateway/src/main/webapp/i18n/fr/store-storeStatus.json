@@ -1,9 +1,0 @@
-{
-  "gatewayApp": {
-    "StoreStatus": {
-      "null": "",
-      "OPEN": "OPEN",
-      "CLOSED": "CLOSED"
-    }
-  }
-}
